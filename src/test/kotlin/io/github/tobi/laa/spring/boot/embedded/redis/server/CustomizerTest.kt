@@ -12,7 +12,13 @@ import redis.embedded.core.RedisServerBuilder
 private const val TEST_PORT = 11111
 
 @IntegrationTest
-@EmbeddedRedisServer(customizer = [WillBeIgnored::class, SetsPort::class, SetsProtectedMode::class])
+@EmbeddedRedisServer(
+    customizer = [
+        WillBeIgnored::class,
+        SetsPortToTestPort::class,
+        SetsBindToLoopbackIpv4::class,
+        SetsProtectedMode::class]
+)
 @DisplayName("Using @EmbeddedRedisServer with several customizers")
 internal open class CustomizerTest {
 
@@ -27,7 +33,7 @@ internal open class CustomizerTest {
             .whenDoingNothing()
             .then().redisProperties()
             .shouldBeStandalone().and()
-            .shouldHaveHost("localhost").and()
+            .shouldHaveHost("127.0.0.1").and()
             .shouldHavePort(TEST_PORT)
     }
 
@@ -56,18 +62,25 @@ internal open class CustomizerTest {
         given.nothing()
             .whenDoingNothing()
             .then().embeddedRedis()
-            .shouldHaveConfigFile().thatContainsSetting("protected-mode yes")
+            .shouldHaveConfig().thatContainsDirective("protected-mode", "yes")
     }
 
     class WillBeIgnored : RedisServerCustomizer {
         override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
             builder.port(1)
+            builder.bind("zombo.com")
         }
     }
 
-    class SetsPort : RedisServerCustomizer {
+    class SetsPortToTestPort : RedisServerCustomizer {
         override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
             builder.port(TEST_PORT)
+        }
+    }
+
+    class SetsBindToLoopbackIpv4 : RedisServerCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+            builder.bind("127.0.0.1")
         }
     }
 

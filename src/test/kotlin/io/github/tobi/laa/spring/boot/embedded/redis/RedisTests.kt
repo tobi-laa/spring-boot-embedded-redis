@@ -1,5 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis
 
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ObjectAssert
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
@@ -7,8 +8,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
-import redis.embedded.RedisInstance
-import java.io.File
 import java.util.*
 import kotlin.random.Random
 
@@ -135,29 +134,15 @@ internal open class RedisTests(
         }
 
         @Suppress("UNCHECKED_CAST")
-        fun shouldHaveConfigFile(): ConfigFile {
-            val redis = context?.let { RedisStore.get(it) }
-            assertThat(redis).isNotNull
-
-            val argsProp = RedisInstance::class.java.declaredFields.firstOrNull { it.name == "args" }
-            assertThat(argsProp).isNotNull
-
-            argsProp!!.isAccessible = true
-            val args = argsProp.get(redis) as List<String>?
-            assertThat(args).isNotNull
-
-            val configFile = args!!.find { it.endsWith(".conf") }?.let { File(it) }
-            assertThat(configFile).isNotNull().exists()
-
-            return ConfigFile(configFile!!)
+        fun shouldHaveConfig(): RedisConfAssertion {
+            val conf = context?.let { RedisStore.conf(it) }!!
+            return RedisConfAssertion(conf)
         }
     }
 
-    inner class ConfigFile(file: File) {
+    inner class RedisConfAssertion(val conf: RedisConf) {
 
-        val settings = file.readLines()
-
-        fun and(): ConfigFile {
+        fun and(): RedisConfAssertion {
             return this
         }
 
@@ -165,8 +150,12 @@ internal open class RedisTests(
             return this@RedisTests
         }
 
-        fun thatContainsSetting(setting: String): ConfigFile {
-            assertThat(settings).contains(setting)
+        fun thatContainsDirective(keyword: String, vararg arguments: String): RedisConfAssertion {
+            return thatContainsDirective(RedisConf.Directive(keyword, *arguments))
+        }
+
+        fun thatContainsDirective(directive: RedisConf.Directive): RedisConfAssertion {
+            assertThat(conf.directives).contains(directive)
             return this
         }
     }

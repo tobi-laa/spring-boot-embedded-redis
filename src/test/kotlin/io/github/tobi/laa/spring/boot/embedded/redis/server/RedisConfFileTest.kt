@@ -55,8 +55,8 @@ internal class RedisConfFileTest {
         given.nothing()
             .whenDoingNothing()
             .then().embeddedRedis()
-            .shouldHaveConfigFile().thatContainsSetting("appendonly no")
-            .and().thatContainsSetting("protected-mode yes")
-            .and().thatContainsSetting("appendfsync everysec")
+            .shouldHaveConfig().thatContainsDirective("appendonly", "no")
+            .and().thatContainsDirective("protected-mode", "yes")
+            .and().thatContainsDirective("appendfsync", "everysec")
     }
 }

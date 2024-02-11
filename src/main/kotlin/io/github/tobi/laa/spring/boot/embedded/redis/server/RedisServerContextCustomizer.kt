@@ -2,45 +2,50 @@ package io.github.tobi.laa.spring.boot.embedded.redis.server
 
 import io.github.tobi.laa.spring.boot.embedded.redis.PortProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.test.context.ContextCustomizer
 import org.springframework.test.context.MergedContextConfiguration
+import redis.clients.jedis.JedisPooled
 import redis.embedded.Redis
-import redis.embedded.RedisInstance
 import redis.embedded.RedisServer
 import redis.embedded.RedisServer.newRedisServer
 import redis.embedded.core.ExecutableProvider.newJarResourceProvider
 import java.io.File
 import kotlin.reflect.full.createInstance
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 internal class RedisServerContextCustomizer(
-    val config: EmbeddedRedisServer,
-    portProvider: PortProvider = PortProvider()
+    private val config: EmbeddedRedisServer,
+    private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
-    val port = if (config.port != 0) config.port else portProvider.next()
-    val host = config.bind.ifEmpty { "127.0.0.1" }
-
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
-        val redis = createAndStartServer(context)
-        setSpringProperties(context, redis)
-        addShutdownListener(context, redis)
+        RedisStore.computeIfAbsent(context) {
+            val server = createAndStartServer()
+            val conf = parseConf(server)
+            val client = createClient(server, conf)
+            setSpringProperties(context, server, conf)
+            addShutdownListener(context, server, client)
+            Triple(server, conf, client)
+        }
     }
 
-    private fun createAndStartServer(context: ConfigurableApplicationContext): Redis {
-        val redis = RedisStore.computeIfAbsent(context) { createServer() }
-        redis.start()
-        return redis
+    private fun createAndStartServer(): Redis {
+        val server = createServer()
+        server.start()
+        return server
     }
 
     private fun createServer(): RedisServer {
         val builder = newRedisServer()
-            .port(port)
-            .bind(host)
+            .port(if (config.port != 0) config.port else portProvider.next())
+        if (config.bind.isNotEmpty()) {
+            builder.bind(config.bind)
+        }
         if (config.configFile.isNotEmpty()) {
             builder.configFile(config.configFile)
         } else {
@@ -53,30 +58,27 @@ internal class RedisServerContextCustomizer(
         return builder.build()
     }
 
-    private fun setSpringProperties(context: ConfigurableApplicationContext, redis: Redis) {
+    private fun parseConf(server: Redis): RedisConf =
+        RedisConfLocator.locate(server).let { return RedisConfParser.parse(it) }
+
+    private fun createClient(server: Redis, conf: RedisConf): JedisPooled {
+        return JedisPooled(conf.getBinds().first(), server.ports().first())
+    }
+
+    private fun setSpringProperties(context: ConfigurableApplicationContext, server: Redis, conf: RedisConf) {
         TestPropertyValues.of(
             mapOf(
-                "spring.data.redis.port" to redis.ports().first().toString(),
-                "spring.data.redis.host" to host
+                "spring.data.redis.port" to server.ports().first().toString(),
+                "spring.data.redis.host" to conf.getBinds().first()
             )
         ).applyTo(context.environment)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun host(redis: Redis): String {
-        val argsProperty = RedisInstance::class.memberProperties.firstOrNull { it.name == "args" }
-        val args = argsProperty?.let {
-            it.isAccessible = true
-            it.get(redis as RedisInstance)
-        } as List<String>
-        println(args)
-        return args.findLast { it.startsWith("bind") }?.split(" ")?.getOrNull(1) ?: "localhost"
-    }
-
-    private fun addShutdownListener(context: ConfigurableApplicationContext, redis: Redis) {
+    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: JedisPooled) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
-                redis.stop()
+                client.close()
+                server.stop()
             }
         }
     }

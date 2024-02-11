@@ -40,6 +40,6 @@ internal class EmbeddedRedisSpringExtension : BeforeAllCallback, AfterEachCallba
 
     private fun flushAll(extensionContext: ExtensionContext?) {
         val applicationContext = SpringExtension.getApplicationContext(extensionContext!!)
-        JedisConnectionStore.getOrCreate(applicationContext).flushAll()
+        RedisStore.client(applicationContext)!!.flushAll()
     }
 }
