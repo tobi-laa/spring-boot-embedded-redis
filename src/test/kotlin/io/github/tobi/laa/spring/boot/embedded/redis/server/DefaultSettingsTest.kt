@@ -16,6 +16,7 @@ internal open class DefaultSettingsTest {
     private lateinit var given: RedisTests
 
     @Test
+    @DisplayName("RedisProperties should have the default values")
     @Order(1)
     fun redisPropertiesShouldHaveDefaultValues() {
         given.nothing()
@@ -27,6 +28,7 @@ internal open class DefaultSettingsTest {
     }
 
     @Test
+    @DisplayName("It should be possible to write to Redis and the data should be available afterwards")
     @Order(2)
     fun givenRandomTestdata_writingToRedis_dataShouldBeAvailable() {
         given.randomTestdata()
@@ -35,6 +37,7 @@ internal open class DefaultSettingsTest {
     }
 
     @Test
+    @DisplayName("Redis should have been flushed after the first test")
     @Order(3)
     fun redisShouldHaveBeenFlushed() {
         given.nothing()

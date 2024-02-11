@@ -20,6 +20,7 @@ internal open class CustomizerTest {
     private lateinit var given: RedisTests
 
     @Test
+    @DisplayName("RedisProperties should have the customized values")
     @Order(1)
     fun redisPropertiesShouldHaveCustomizedValues() {
         given.nothing()
@@ -31,6 +32,7 @@ internal open class CustomizerTest {
     }
 
     @Test
+    @DisplayName("It should be possible to write to Redis and the data should be available afterwards")
     @Order(2)
     fun givenRandomTestdata_writingToRedis_dataShouldBeAvailable() {
         given.randomTestdata()
@@ -39,6 +41,7 @@ internal open class CustomizerTest {
     }
 
     @Test
+    @DisplayName("Redis should have been flushed after the first test")
     @Order(3)
     fun redisShouldHaveBeenFlushed() {
         given.nothing()
@@ -47,6 +50,7 @@ internal open class CustomizerTest {
     }
 
     @Test
+    @DisplayName("Settings from customizer should have been applied to the embedded Redis server")
     @Order(4)
     fun settingsFromCustomizerShouldHaveBeenApplied() {
         given.nothing()

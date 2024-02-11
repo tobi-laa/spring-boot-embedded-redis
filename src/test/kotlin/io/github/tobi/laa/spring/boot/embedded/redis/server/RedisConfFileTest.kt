@@ -19,6 +19,7 @@ internal class RedisConfFileTest {
     private lateinit var given: RedisTests
 
     @Test
+    @DisplayName("RedisProperties should have the values as given in the redis.conf file")
     @Order(1)
     fun redisPropertiesShouldHaveConfiguredValues() {
         given.nothing()
@@ -30,6 +31,7 @@ internal class RedisConfFileTest {
     }
 
     @Test
+    @DisplayName("It should be possible to write to Redis and the data should be available afterwards")
     @Order(2)
     fun givenRandomTestdata_writingToRedis_dataShouldBeAvailable() {
         given.randomTestdata()
@@ -38,6 +40,7 @@ internal class RedisConfFileTest {
     }
 
     @Test
+    @DisplayName("Redis should have been flushed after the first test")
     @Order(3)
     fun redisShouldHaveBeenFlushed() {
         given.nothing()
@@ -46,6 +49,7 @@ internal class RedisConfFileTest {
     }
 
     @Test
+    @DisplayName("Settings from redis.conf should have been applied to the embedded Redis server")
     @Order(4)
     fun configFileShouldHaveBeenApplied() {
         given.nothing()
