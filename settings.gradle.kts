@@ -1,1 +1,1 @@
-rootProject.name = "embedded-redis-spring-boot"
+rootProject.name = "spring-boot-embedded-redis"
