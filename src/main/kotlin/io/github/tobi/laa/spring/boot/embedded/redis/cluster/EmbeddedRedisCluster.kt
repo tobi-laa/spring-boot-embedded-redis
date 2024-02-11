@@ -13,4 +13,4 @@ import org.springframework.test.context.ContextCustomizerFactories
 @MustBeDocumented
 @ExtendWith(RedisFlushAllExtension::class)
 @ContextCustomizerFactories(RedisServerContextCustomizerFactory::class)
-annotation class EmbeddedRedisCluster
+internal annotation class EmbeddedRedisCluster
