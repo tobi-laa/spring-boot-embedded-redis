@@ -1,7 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.server
 
-import io.github.tobi.laa.spring.boot.embedded.redis.EmbeddedRedisSpringExtension
-import org.junit.jupiter.api.extension.ExtendWith
+import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.EmbeddedRedisTest
 import org.springframework.test.context.ContextCustomizerFactories
 import kotlin.reflect.KClass
 
@@ -11,7 +10,7 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-@ExtendWith(EmbeddedRedisSpringExtension::class)
+@EmbeddedRedisTest
 @ContextCustomizerFactories(RedisServerContextCustomizerFactory::class)
 annotation class EmbeddedRedisServer(
     /**
@@ -22,6 +21,13 @@ annotation class EmbeddedRedisServer(
 
     /**
      * The path to the Redis config file to use. If set, the config will be loaded from the file.
+     *
+     * > **Warning**
+     * Due to how embedded Redis is implemented, a [port] specified in the `redis.conf` file will be ignored.
+     *
+     * > **Warning**
+     * Cannot be set together with [settings].
+     *
      * @see redis.embedded.core.RedisServerBuilder.configFile
      */
     val configFile: String = "",
@@ -34,6 +40,10 @@ annotation class EmbeddedRedisServer(
 
     /**
      * The setting to use. If set, the server will be started with the given settings.
+     *
+     * > **Warning**
+     * Cannot be set together with [configFile].
+     *
      * @see redis.embedded.core.RedisServerBuilder.setting
      */
     val settings: Array<String> = [],

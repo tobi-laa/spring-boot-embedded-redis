@@ -6,8 +6,10 @@ import org.assertj.core.api.ObjectAssert
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.annotation.Scope
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
+import redis.embedded.Redis
 import java.util.*
 import kotlin.random.Random
 
@@ -15,6 +17,7 @@ import kotlin.random.Random
  * Used for sharing common test logic across different test classes.
  */
 @Component
+@Scope("prototype")
 internal open class RedisTests(
     val props: RedisProperties,
     val template: RedisTemplate<String, Any>,

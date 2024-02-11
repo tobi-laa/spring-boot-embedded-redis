@@ -1,26 +1,18 @@
-package io.github.tobi.laa.spring.boot.embedded.redis
+package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll.Mode.AFTER_CLASS
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll.Mode.AFTER_METHOD
-import org.junit.jupiter.api.extension.*
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import org.junit.jupiter.api.extension.AfterAllCallback
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.springframework.test.context.junit.jupiter.SpringExtension.getApplicationContext
 
-internal class EmbeddedRedisSpringExtension : BeforeAllCallback, AfterEachCallback, AfterAllCallback,
-    ParameterResolver {
-
-    override fun beforeAll(context: ExtensionContext?) {
-        // TODO("Not yet implemented")
-    }
-
-    override fun supportsParameter(parameterContext: ParameterContext?, extensionContext: ExtensionContext?): Boolean {
-        // TODO("Not yet implemented")
-        return false
-    }
-
-    override fun resolveParameter(parameterContext: ParameterContext?, extensionContext: ExtensionContext?): Any {
-        // TODO("Not yet implemented")
-        return Any()
-    }
+/**
+ * JUnit 5 extension to flush all Redis data after each test method or after all test methods of a test class.
+ */
+internal class RedisFlushAllExtension : AfterEachCallback, AfterAllCallback {
 
     override fun afterEach(extensionContext: ExtensionContext?) {
         if (flushAllMode(extensionContext) == AFTER_METHOD) {
@@ -39,7 +31,7 @@ internal class EmbeddedRedisSpringExtension : BeforeAllCallback, AfterEachCallba
     }
 
     private fun flushAll(extensionContext: ExtensionContext?) {
-        val applicationContext = SpringExtension.getApplicationContext(extensionContext!!)
+        val applicationContext = getApplicationContext(extensionContext!!)
         RedisStore.client(applicationContext)!!.flushAll()
     }
 }
