@@ -34,7 +34,7 @@ dependencyManagement {
 }
 
 dependencies {
-    api("com.github.codemonstur:embedded-redis:1.4.0")
+    api("com.github.codemonstur:embedded-redis:1.4.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-test")
     implementation("org.springframework:spring-test")
