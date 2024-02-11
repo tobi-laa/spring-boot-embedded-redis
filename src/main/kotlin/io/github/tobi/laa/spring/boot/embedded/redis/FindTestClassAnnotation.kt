@@ -10,8 +10,8 @@ internal inline fun <reified T : Annotation> findTestClassAnnotation(
     var clazz = testClass
     var annotation = findAnnotation(clazz, annotationType)
     while (annotation == null && searchEnclosingClass(clazz) && clazz.enclosingClass != null) {
-        annotation = findAnnotation(clazz, annotationType)
         clazz = clazz.enclosingClass
+        annotation = findAnnotation(clazz, annotationType)
     }
     return annotation
 }
