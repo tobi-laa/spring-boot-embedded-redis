@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Scope
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
-import redis.embedded.Redis
 import java.util.*
 import kotlin.random.Random
 
