@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("jvm") version "1.9.22"
     id("com.adarshr.test-logger") version "4.0.0"
+    id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
 }
 
@@ -55,4 +56,11 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required = true
+    }
 }
