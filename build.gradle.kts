@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
     kotlin("jvm") version "1.9.22"
     id("com.adarshr.test-logger") version "4.0.0"
+    id("org.sonarqube") version "4.4.1.3373"
 }
 
 group = "io.github.tobi.laa"
@@ -11,6 +12,14 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "tobias-laa_spring-boot-embedded-redis")
+        property("sonar.organization", "tobias-laa")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 repositories {
