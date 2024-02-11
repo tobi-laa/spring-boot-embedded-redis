@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @IntegrationTest
 @EmbeddedRedisServer(
     port = 12345,
-    configFile = "src/test/resources/redis/conf/redis.conf"
+    configFile = "src/test/resources/server/redis.conf"
 )
 @DisplayName("Using @EmbeddedRedisServer with config file")
 internal class RedisConfFileTest {

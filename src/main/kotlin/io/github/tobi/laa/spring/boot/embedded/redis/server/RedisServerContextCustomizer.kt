@@ -23,7 +23,7 @@ internal class RedisServerContextCustomizer(
 ) : ContextCustomizer {
 
     val port = if (config.port != 0) config.port else portProvider.next()
-    val host = if (config.bind.isNotEmpty()) config.bind else "127.0.0.1"
+    val host = config.bind.ifEmpty { "127.0.0.1" }
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         val redis = createAndStartServer(context)

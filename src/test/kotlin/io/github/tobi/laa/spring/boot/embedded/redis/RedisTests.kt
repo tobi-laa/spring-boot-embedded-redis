@@ -91,7 +91,7 @@ internal open class RedisTests(
         }
 
         fun shouldNotContainAnyTestdata(): Redis {
-            testdata.forEach { (key, value) -> assertThat(template.opsForValue().get(key)).isNull() }
+            testdata.forEach { (key, _) -> assertThat(template.opsForValue().get(key)).isNull() }
             return this
         }
     }
