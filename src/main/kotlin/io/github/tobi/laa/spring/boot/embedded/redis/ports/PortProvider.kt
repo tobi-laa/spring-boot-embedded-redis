@@ -1,10 +1,8 @@
-package io.github.tobi.laa.spring.boot.embedded.redis
+package io.github.tobi.laa.spring.boot.embedded.redis.ports
 
 import redis.embedded.Redis.DEFAULT_REDIS_PORT
 import redis.embedded.core.PortProvider.REDIS_CLUSTER_MAX_PORT_EXCLUSIVE
-import java.net.InetAddress
 import java.util.concurrent.ConcurrentSkipListSet
-import javax.net.ServerSocketFactory
 
 /**
  * The default port used by Redis Sentinel.
@@ -47,17 +45,6 @@ internal class PortProvider {
     private fun portCanBeHandedOut(port: Int): Boolean {
         val busPort = port + BUS_PORT_OFFSET
         return !handedOutPorts.contains(port) && !handedOutPorts.contains(busPort) &&
-                available(port) && available(busPort)
-    }
-
-    private fun available(port: Int): Boolean {
-        try {
-            val serverSocket = ServerSocketFactory.getDefault()
-                .createServerSocket(port, 1, InetAddress.getByName("localhost"))
-            serverSocket.close()
-            return true
-        } catch (ex: Exception) {
-            return false
-        }
+                PortChecker.available(port) && PortChecker.available(busPort)
     }
 }

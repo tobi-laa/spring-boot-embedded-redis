@@ -1,10 +1,10 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.server
 
-import io.github.tobi.laa.spring.boot.embedded.redis.PortProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
+import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent

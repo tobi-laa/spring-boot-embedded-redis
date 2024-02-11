@@ -59,13 +59,13 @@ internal class RedisConfParserTest {
     }
 
     private fun thenValidRedisConfShouldBeReturned() {
-        assertThatCode { parse!!.call() }.doesNotThrowAnyException()
+        assertThatCode(parse).doesNotThrowAnyException()
         assertThat(result).isNotNull
         assertThat(result!!.directives).isNotEmpty
     }
 
     private fun thenParsedConfShouldBeAs(expected: RedisConf) {
-        assertThatCode { parse!!.call() }.doesNotThrowAnyException()
+        assertThatCode(parse!!).doesNotThrowAnyException()
         assertThat(result).usingRecursiveComparison().isEqualTo(expected)
     }
 
