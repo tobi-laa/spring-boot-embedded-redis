@@ -1,11 +1,20 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val springBootVersion = "3.2.2"
+val embeddedRedisVersion = "1.4.1"
+val mockkVersion = "1.13.9"
+
 plugins {
-    id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.22"
-    id("com.adarshr.test-logger") version "4.0.0"
+    val springDependencyManagementVersion = "1.1.4"
+    val kotlinVersion = "1.9.22"
+    val adarshrTestLoggerVersion = "4.0.0"
+    val sonarqubeVersion = "4.4.1.3373"
+
+    id("io.spring.dependency-management") version springDependencyManagementVersion
+    kotlin("jvm") version kotlinVersion
+    id("com.adarshr.test-logger") version adarshrTestLoggerVersion
     id("jacoco")
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version sonarqubeVersion
 }
 
 group = "io.github.tobi.laa"
@@ -29,12 +38,12 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.2.2")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
     }
 }
 
 dependencies {
-    api("com.github.codemonstur:embedded-redis:1.4.1")
+    api("com.github.codemonstur:embedded-redis:$embeddedRedisVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-test")
     implementation("org.springframework:spring-test")
@@ -45,7 +54,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
