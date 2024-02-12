@@ -30,8 +30,7 @@ jobs:
       - name: Decode GPG Key
         run: |
           mkdir -p ~/.gradle/
-          echo "${{secrets.GPG_PRIVATE_KEY}}" > ~/.gradle/secring.gpg.b64
-          base64 -d ~/.gradle/secring.gpg.b64 > ~/.gradle/secring.gpg
+          echo "${{secrets.GPG_PRIVATE_KEY}}" > ~/.gradle/secring.gpg
       - name: Publish package
         # wraped the signing.password with single quotes as the password could contain special characters
         run: ./gradlew publish -Psigning.keyId=${{secrets.GPG_PRIVATE_KEY_ID}} -Psigning.password='${{secrets.GPG_PASSPHRASE}}' -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg) --warn --stacktrace
