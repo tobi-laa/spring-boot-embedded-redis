@@ -12,16 +12,21 @@ plugins {
 
     id("io.spring.dependency-management") version springDependencyManagementVersion
     kotlin("jvm") version kotlinVersion
+    id("java-library")
     id("com.adarshr.test-logger") version adarshrTestLoggerVersion
     id("jacoco")
     id("org.sonarqube") version sonarqubeVersion
+    id("maven-publish")
+    id("signing")
 }
 
-group = "io.github.tobi.laa"
+group = "io.github.tobi-laa"
 version = "0.0.1-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    withJavadocJar()
+    withSourcesJar()
 }
 
 sonar {
@@ -72,4 +77,79 @@ tasks.jacocoTestReport {
     reports {
         xml.required = true
     }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = "${group}"
+            artifactId = rootProject.name
+            version = version
+            from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = "${group}:${rootProject.name}"
+                description = "Integrates embedded-redis with Spring Boot"
+                url = "https://github.com/tobias-laa/spring-boot-embedded-redis.git"
+                properties = mapOf(
+                    "myProp" to "value",
+                    "prop.with.dots" to "anotherValue"
+                )
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                        comments = "A business-friendly OSS license"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "tobi-laa"
+                        name = "Tobias Laatsch"
+                        email = "tobias.laatsch@posteo.de"
+                        organizationUrl = "https://github.com/tobias-laa"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git@github.com:tobias-laa/spring-boot-embedded-redis.git"
+                    developerConnection = "scm:git:git@github.com:tobias-laa/spring-boot-embedded-redis.git"
+                    url = "https://github.com/tobias-laa/spring-boot-embedded-redis/tree/master"
+                    tag = "HEAD"
+                }
+                issueManagement {
+                    system = "GitHub Issues"
+                    url = "https://github.com/tobias-laa/spring-boot-embedded-redis/issues"
+                }
+                inceptionYear = "2024"
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            val releasesRepoUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsRepoUrl = uri("https://oss.sonatype.org/content/repositories/snapshots")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
+tasks.javadoc {
+    (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
 }
