@@ -150,7 +150,7 @@ signing {
     sign(publishing.publications["mavenJava"])
     useGpgCmd()
     gpg {
-        passphrase System.env['GPG_PASSPHRASE'] ?: ''
+        passphrase = System.getenv("GPG_PASSPHRASE")
     }
 }
 
