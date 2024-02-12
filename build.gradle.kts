@@ -149,6 +149,9 @@ publishing {
 signing {
     sign(publishing.publications["mavenJava"])
     useGpgCmd()
+    gpg {
+        passphrase System.env['GPG_PASSPHRASE'] ?: ''
+    }
 }
 
 tasks.javadoc {
