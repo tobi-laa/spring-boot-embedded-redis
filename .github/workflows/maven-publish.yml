@@ -27,11 +27,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_TOKEN
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
       - name: Publish package
         uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
         with:
@@ -39,4 +34,6 @@ jobs:
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_signingKeyId: '5F9C93F9D0B2438E267AA9F36A4F0CEF73C69E9C'
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
