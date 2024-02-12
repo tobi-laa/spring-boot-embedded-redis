@@ -3,5 +3,6 @@
 link:./LICENSE[image:https://img.shields.io/badge/License-Apache%202.0-orange[Apache 2.0 License\]]
 image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring-boot-embedded-redis&metric=alert_status[Quality Gate Status,link=https://sonarcloud.io/summary/new_code?id=tobias-laa_spring-boot-embedded-redis]
 image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring-boot-embedded-redis&metric=coverage[Coverage,link=https://sonarcloud.io/summary/new_code?id=tobias-laa_spring-boot-embedded-redis]
+image:https://img.shields.io/maven-metadata/v/https/repo1.maven.org/maven2/io/github/tobi-laa/spring-boot-embedded-redis/maven-metadata.xml.svg[Releases,link=http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22io.github.tobi-laa%22%20AND%20a%3A%22spring-boot-embedded-redis%22]
 
 = Spring Boot `embedded-redis`
