@@ -24,7 +24,6 @@ plugins {
 }
 
 group = "io.github.tobi-laa"
-version = "0.0.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -159,4 +158,8 @@ signing {
 
 tasks.javadoc {
     (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+}
+
+release {
+    tagTemplate = "v${version}"
 }
