@@ -11,6 +11,7 @@ import redis.embedded.RedisServer
 
 @IntegrationTest
 @EmbeddedRedisServer
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @DisplayName("Parameter resolver test for @EmbeddedRedisServer")
 internal class ParamResolverTest {
 

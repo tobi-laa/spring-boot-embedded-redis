@@ -8,10 +8,6 @@ private const val KEYWORD_BIND = "bind"
  */
 internal data class RedisConf(val directives: List<Directive>) {
 
-    fun getPorts(): List<Int> {
-        return getDirectives(KEYWORD_PORT).map { it.arguments.first().toInt() }
-    }
-
     fun getBinds(): List<String> {
         return getDirectives(KEYWORD_BIND).map { it.arguments.first() }
     }

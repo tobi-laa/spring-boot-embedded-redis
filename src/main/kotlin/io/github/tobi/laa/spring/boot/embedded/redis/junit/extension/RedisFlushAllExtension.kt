@@ -27,7 +27,8 @@ internal class RedisFlushAllExtension : AfterEachCallback, AfterAllCallback {
     }
 
     private fun flushAllMode(extensionContext: ExtensionContext?): RedisFlushAll.Mode {
-        return extensionContext!!.requiredTestClass!!.getAnnotation(RedisFlushAll::class.java)?.mode ?: AFTER_METHOD
+        val mode = extensionContext!!.requiredTestClass.getAnnotation(RedisFlushAll::class.java)?.mode
+        return mode ?: AFTER_METHOD
     }
 
     private fun flushAll(extensionContext: ExtensionContext?) {

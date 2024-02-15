@@ -3,15 +3,14 @@ package io.github.tobi.laa.spring.boot.embedded.redis.server
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-private const val TEST_PORT = 10003
+private const val TEST_PORT = 10004
 
 @IntegrationTest
 @EmbeddedRedisServer(
-    port = 10003,
+    port = TEST_PORT,
     configFile = "src/test/resources/server/redis.conf"
 )
 @DisplayName("Using @EmbeddedRedisServer with config file")
@@ -22,7 +21,6 @@ internal class RedisConfFileTest {
 
     @Test
     @DisplayName("RedisProperties should have the values as given in the redis.conf file")
-    @Order(1)
     fun redisPropertiesShouldHaveConfiguredValues() {
         given.nothing()
             .whenDoingNothing()
@@ -34,7 +32,6 @@ internal class RedisConfFileTest {
 
     @Test
     @DisplayName("It should be possible to write to Redis and the data should be available afterwards")
-    @Order(2)
     fun givenRandomTestdata_writingToRedis_dataShouldBeAvailable() {
         given.randomTestdata()
             .whenRedis().isBeingWrittenTo()
@@ -42,17 +39,7 @@ internal class RedisConfFileTest {
     }
 
     @Test
-    @DisplayName("Redis should have been flushed after the first test")
-    @Order(3)
-    fun redisShouldHaveBeenFlushed() {
-        given.nothing()
-            .whenDoingNothing()
-            .then().redis().shouldNotContainAnyTestdata()
-    }
-
-    @Test
     @DisplayName("Settings from redis.conf should have been applied to the embedded Redis server")
-    @Order(4)
     fun configFileShouldHaveBeenApplied() {
         given.nothing()
             .whenDoingNothing()

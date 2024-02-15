@@ -5,25 +5,25 @@ import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import redis.embedded.Redis
+
+private const val TEST_PORT = 10003
 
 @IntegrationTest
-@EmbeddedRedisServer
-@DisplayName("Using @EmbeddedRedisServer with default settings")
-internal open class DefaultSettingsTest {
+@EmbeddedRedisServer(bind = "", port = TEST_PORT)
+@DisplayName("Using @EmbeddedRedisServer with empty bind")
+internal class NoBindTest {
 
     @Autowired
     private lateinit var given: RedisTests
 
     @Test
-    @DisplayName("RedisProperties should have the default values")
+    @DisplayName("RedisProperties should have default bind from embedded-redis library")
     fun redisPropertiesShouldHaveDefaultValues() {
         given.nothing()
             .whenDoingNothing()
             .then().redisProperties()
             .shouldBeStandalone().and()
-            .shouldHaveHost("localhost").and()
-            .shouldHavePort(Redis.DEFAULT_REDIS_PORT)
+            .shouldHaveHost("127.0.0.1")
     }
 
     @Test
