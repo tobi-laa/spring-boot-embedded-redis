@@ -10,6 +10,7 @@ plugins {
     val kotlinVersion = "1.9.22"
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "4.4.1.3373"
+    val gradleReleasePluginVersion = "3.0.2"
 
     id("io.spring.dependency-management") version springDependencyManagementVersion
     kotlin("jvm") version kotlinVersion
@@ -19,6 +20,7 @@ plugins {
     id("org.sonarqube") version sonarqubeVersion
     id("maven-publish")
     id("signing")
+    id("net.researchgate.release") version gradleReleasePluginVersion
 }
 
 group = "io.github.tobi-laa"

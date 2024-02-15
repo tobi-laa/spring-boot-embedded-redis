@@ -45,9 +45,13 @@ Releases are automatically built and published to Maven Central once a tag follo
 
 The artifact version should correspond to the aforementioned tag, meaning tags such as `v1.0.0` should only be applied if the artifact version within the project's `build.gradle.kts` is `1.0.0`.
 
-TODO: Gradle Release plugin
+To simplify the release process, this project uses the
+https://plugins.gradle.org/plugin/net.researchgate.release[`net.researchgate.release`]
+Gradle plugin.
+
+The following command can be used to release a new version:
 
 [,bash]
 ----
-mvn release:prepare release:clean -B
+gradle release
 ----
