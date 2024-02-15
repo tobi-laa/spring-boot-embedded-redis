@@ -6,11 +6,13 @@ import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import org.assertj.core.api.AbstractIntegerAssert
 import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.ListAssert
 import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import redis.embedded.Redis.DEFAULT_REDIS_PORT
 import java.util.stream.IntStream.range
 
 @ExtendWith(MockKExtension::class)
@@ -77,11 +79,29 @@ internal class PortProviderTest {
 
     @DisplayName("Multiple valid ports should be returned if all ports are free")
     @ParameterizedTest(name = "{0} valid ports should be returned")
-    @ValueSource(ints = [5, 10, 100, 10000])
+    @ValueSource(ints = [5, 10, 100])
     fun freePorts_requestingPorts_returnsValidPorts(nOfPorts: Int) {
         givenFreePorts()
         whenNextPortsAreRequested(nOfPorts)
         thenValidPortsAreReturned(nOfPorts)
+    }
+
+    @Test
+    @DisplayName("If port 16379 (bus port) is taken, port 6379 should not be handed out")
+    fun defaultBusPortTaken_requestingPort_skipDefaultPort() {
+        givenFreePorts()
+        givenFirstBusPortTaken()
+        whenNextPortIsRequested()
+        thenValidPortIsReturned().isNotEqualTo(DEFAULT_REDIS_PORT)
+    }
+
+    @Test
+    @DisplayName("If a bus port has been handed out, the corresponding Redis port should not be handed out")
+    fun busPortHandedOut_requestingPort_skipPortWithHandedOutBusPort() {
+        givenFreePorts()
+        givenSentinelPortPreviouslyRequested()
+        whenNextPortsAreRequested(10000)
+        thenValidPortsAreReturned(10000).doesNotContain(DEFAULT_REDIS_PORT + BUS_PORT_OFFSET)
     }
 
     private fun givenSentinel() {
@@ -97,6 +117,16 @@ internal class PortProviderTest {
 
     private fun givenNoFreePorts() {
         every { PortChecker.available(any()) } returns false
+    }
+
+    private fun givenFirstBusPortTaken() {
+        val firstBusPort = DEFAULT_REDIS_PORT + BUS_PORT_OFFSET
+        every { PortChecker.available(eq(firstBusPort)) } returns false
+        every { PortChecker.available(neq(firstBusPort)) } returns true
+    }
+
+    private fun givenSentinelPortPreviouslyRequested() {
+        portProvider.next(true)
     }
 
     private fun whenNextPortIsRequested() = whenNextPortsAreRequested(1)
@@ -118,7 +148,7 @@ internal class PortProviderTest {
         return assertThat(actualPorts.first())
     }
 
-    private fun thenValidPortsAreReturned(nOfPorts: Int) {
+    private fun thenValidPortsAreReturned(nOfPorts: Int): ListAssert<Int> {
         assertThatCode(requestPorts!!).doesNotThrowAnyException()
         assertThat(actualPorts).hasSize(nOfPorts)
         assertThat(actualPorts).isNotEmpty.doesNotHaveDuplicates()
@@ -129,5 +159,6 @@ internal class PortProviderTest {
         }
         // bus port should have been left free
         assertThat(actualPorts).allSatisfy { assertThat(actualPorts).doesNotContain(it + 10000) }
+        return assertThat(actualPorts)
     }
 }
