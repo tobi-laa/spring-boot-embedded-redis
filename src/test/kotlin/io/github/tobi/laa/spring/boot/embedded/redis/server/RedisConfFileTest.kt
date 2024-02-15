@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
+private const val TEST_PORT = 10003
+
 @IntegrationTest
 @EmbeddedRedisServer(
     port = 10003,
@@ -27,7 +29,7 @@ internal class RedisConfFileTest {
             .then().redisProperties()
             .shouldBeStandalone().and()
             .shouldHaveHost("localhost").and()
-            .shouldHavePort(12345)
+            .shouldHavePort(TEST_PORT)
     }
 
     @Test
