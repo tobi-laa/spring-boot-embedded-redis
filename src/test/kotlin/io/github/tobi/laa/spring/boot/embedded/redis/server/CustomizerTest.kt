@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import redis.embedded.core.RedisServerBuilder
 
-private const val TEST_PORT = 11111
+private const val TEST_PORT = 10000
 
 @IntegrationTest
 @EmbeddedRedisServer(

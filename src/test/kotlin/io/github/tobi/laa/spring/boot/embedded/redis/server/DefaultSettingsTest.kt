@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import redis.embedded.Redis
 
 @IntegrationTest
 @EmbeddedRedisServer
@@ -24,7 +25,7 @@ internal open class DefaultSettingsTest {
             .then().redisProperties()
             .shouldBeStandalone().and()
             .shouldHaveHost("localhost").and()
-            .shouldHavePort(6379)
+            .shouldHavePort(Redis.DEFAULT_REDIS_PORT)
     }
 
     @Test

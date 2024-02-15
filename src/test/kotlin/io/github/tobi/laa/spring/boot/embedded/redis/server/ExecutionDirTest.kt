@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 @IntegrationTest
-@EmbeddedRedisServer(executeInDirectory = "build", port = 10001)
+@EmbeddedRedisServer(executeInDirectory = "build", port = 10002)
 @DisplayName("Using @EmbeddedRedisServer with custom execution dir")
 internal class ExecutionDirTest {
 

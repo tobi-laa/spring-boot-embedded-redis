@@ -7,20 +7,35 @@ import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
+private const val TEST_PORT = 10001
+private const val TEST_BIND = "::1"
+
 @IntegrationTest
 @EmbeddedRedisServer(
-    port = 10000,
+    port = TEST_PORT,
+    bind = TEST_BIND,
     settings = [
         "appendonly no",
         "protected-mode yes",
-        "appendfsync everysec",
-        "port 12345"]
+        "appendfsync everysec"]
 )
 @DisplayName("Using @EmbeddedRedisServer with custom settings")
 internal class CustomSettingsTest {
 
     @Autowired
     private lateinit var given: RedisTests
+
+    @Test
+    @DisplayName("RedisProperties should have the customized values")
+    @Order(1)
+    fun redisPropertiesShouldHaveCustomizedValues() {
+        given.nothing()
+            .whenDoingNothing()
+            .then().redisProperties()
+            .shouldBeStandalone().and()
+            .shouldHaveHost(TEST_BIND).and()
+            .shouldHavePort(TEST_PORT)
+    }
 
     @Test
     @DisplayName("It should be possible to write to Redis and the data should be available afterwards")
