@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val springBootVersion = "3.2.2"
 val embeddedRedisVersion = "1.4.1"
 val mockkVersion = "1.13.9"
+val archunitVersion = "1.2.1"
 
 plugins {
     val springDependencyManagementVersion = "1.1.4"
@@ -60,6 +61,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
 }
 
 tasks.withType<KotlinCompile> {
