@@ -12,8 +12,8 @@ plugins {
     val sonarqubeVersion = "4.4.1.3373"
     val gradleReleasePluginVersion = "3.0.2"
 
-    id("io.spring.dependency-management") version springDependencyManagementVersion
     kotlin("jvm") version kotlinVersion
+    id("io.spring.dependency-management") version springDependencyManagementVersion
     id("java-library")
     id("com.adarshr.test-logger") version adarshrTestLoggerVersion
     id("jacoco")
@@ -101,10 +101,6 @@ publishing {
                 name = "${group}:${rootProject.name}"
                 description = "Integrates embedded-redis with Spring Boot"
                 url = "https://github.com/tobias-laa/spring-boot-embedded-redis.git"
-                properties = mapOf(
-                    "myProp" to "value",
-                    "prop.with.dots" to "anotherValue"
-                )
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
