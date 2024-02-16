@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val springBootVersion = "3.2.2"
+val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.1"
 val mockkVersion = "1.13.9"
 val archunitVersion = "1.2.1"
@@ -61,6 +62,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.jayway.jsonpath:json-path:$jsonPathVersion") // override transitive dep due to CVE violation
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
 }
