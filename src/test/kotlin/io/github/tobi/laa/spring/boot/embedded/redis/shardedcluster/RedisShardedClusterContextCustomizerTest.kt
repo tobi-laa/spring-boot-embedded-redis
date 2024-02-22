@@ -41,8 +41,8 @@ internal class RedisShardedClusterContextCustomizerTest {
     @Test
     @DisplayName("Closing ApplicationContext should stop Redis server and Redis client")
     fun closingApplicationContext_shouldStopRedisServerAndRedisClient() {
-        var server: Redis? = null
-        var client: UnifiedJedis? = null
+        var server: Redis?
+        var client: UnifiedJedis?
         AnnotationConfigApplicationContext().use {
             RedisShardedClusterContextCustomizerFactory()
                 .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())

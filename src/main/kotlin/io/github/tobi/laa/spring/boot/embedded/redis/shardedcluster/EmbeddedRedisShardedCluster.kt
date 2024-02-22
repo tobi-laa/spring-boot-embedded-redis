@@ -1,7 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
 
-import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.RedisFlushAllExtension
-import org.junit.jupiter.api.extension.ExtendWith
+import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.EmbeddedRedisTest
 import org.springframework.test.context.ContextCustomizerFactories
 import kotlin.reflect.KClass
 
@@ -11,7 +10,7 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-@ExtendWith(RedisFlushAllExtension::class)
+@EmbeddedRedisTest
 @ContextCustomizerFactories(RedisShardedClusterContextCustomizerFactory::class)
 annotation class EmbeddedRedisShardedCluster(
 
