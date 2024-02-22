@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 @IntegrationTest
-@EmbeddedRedisServer(executeInDirectory = "build")
-@DisplayName("Using @EmbeddedRedisServer with custom execution dir")
+@EmbeddedRedisShardedCluster(executeInDirectory = "build")
+@DisplayName("Using @EmbeddedRedisShardedCluster with custom execution dir")
 internal class ExecutionDirTest {
 
     @Autowired

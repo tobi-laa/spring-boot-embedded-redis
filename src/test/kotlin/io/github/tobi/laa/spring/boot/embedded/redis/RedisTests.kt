@@ -11,8 +11,15 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Scope
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
+import redis.embedded.RedisShardedCluster
+import java.time.Duration
 import java.util.*
 import kotlin.random.Random
+
+private val INITIALIZATION_TIMEOUT_PROP = RedisShardedCluster::class.java.declaredFields
+    .filter { it.name == "initializationTimeout" }
+    .map { field -> field.isAccessible = true; field }
+    .first()
 
 /**
  * Used for sharing common test logic across different test classes.
@@ -147,6 +154,14 @@ internal open class RedisTests(
             val server = context?.let { RedisStore.server(it) }!!
             val conf = RedisConfParser.parse(RedisConfLocator.locate(server))
             return RedisConfAssertion(conf)
+        }
+
+        fun shouldHaveInitializationTimeout(timeout: Duration): EmbeddedRedis {
+            val server = context?.let { RedisStore.server(it) }!!
+            assertThat(server).isInstanceOf(RedisShardedCluster::class.java)
+            val configuredTimeout = INITIALIZATION_TIMEOUT_PROP[server as RedisShardedCluster]
+            assertThat(configuredTimeout).isEqualTo(timeout)
+            return this
         }
     }
 

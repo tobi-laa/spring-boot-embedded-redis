@@ -102,7 +102,7 @@ internal class RedisShardedClusterContextCustomizer(
             .toList()
 
     private fun createClient(addresses: List<Pair<String, Int>>): JedisCluster {
-        return JedisCluster(addresses.map { HostAndPort(it.first, it.second) }.first())
+        return JedisCluster(addresses.map { HostAndPort(it.first, it.second) }.toSet())
     }
 
     private fun setSpringProperties(context: ConfigurableApplicationContext, addresses: List<Pair<String, Int>>) {

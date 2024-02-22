@@ -6,10 +6,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-private const val TEST_PORT = 10003
-
 @IntegrationTest
-@EmbeddedRedisServer(bind = "", port = TEST_PORT)
+@EmbeddedRedisServer(bind = "")
 @DisplayName("Using @EmbeddedRedisServer with empty bind")
 internal class NoBindTest {
 

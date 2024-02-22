@@ -6,11 +6,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-private const val TEST_PORT = 10004
 
 @IntegrationTest
 @EmbeddedRedisServer(
-    port = TEST_PORT,
     configFile = "src/test/resources/server/redis.conf"
 )
 @DisplayName("Using @EmbeddedRedisServer with config file")
@@ -26,8 +24,7 @@ internal class RedisConfFileTest {
             .whenDoingNothing()
             .then().redisProperties()
             .shouldBeStandalone().and()
-            .shouldHaveHost("localhost").and()
-            .shouldHavePort(TEST_PORT)
+            .shouldHaveHost("localhost")
     }
 
     @Test
