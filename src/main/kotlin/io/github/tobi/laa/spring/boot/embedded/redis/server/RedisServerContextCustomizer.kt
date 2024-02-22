@@ -30,7 +30,7 @@ internal class RedisServerContextCustomizer(
             val client = createClient(server, conf)
             setSpringProperties(context, server, conf)
             addShutdownListener(context, server, client)
-            Triple(server, conf, client)
+            Pair(server, client)
         }
     }
 

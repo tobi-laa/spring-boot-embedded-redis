@@ -8,7 +8,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 
 @DisplayName("Tests for RedisServerContextCustomizer")
@@ -41,9 +41,10 @@ internal class RedisServerContextCustomizerTest {
     @DisplayName("Closing ApplicationContext should stop Redis server and Redis client")
     fun closingApplicationContext_shouldStopRedisServerAndRedisClient() {
         var server: Redis? = null
-        var client: JedisPooled? = null
+        var client: UnifiedJedis? = null
         AnnotationConfigApplicationContext().use {
-            RedisServerContextCustomizerFactory().createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+            RedisServerContextCustomizerFactory()
+                .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())!!
                 .customizeContext(it, mockk())
             it.refresh()
             it.start()

@@ -22,12 +22,6 @@ internal class RedisStoreTest {
     }
 
     @Test
-    @DisplayName("Unknown application context should yield null conf")
-    fun unknownAppContext_confIsNull() {
-        Assertions.assertThat(RedisStore.conf(context)).isNull()
-    }
-
-    @Test
     @DisplayName("Unknown application context should yield null client")
     fun unknownAppContext_clientIsNull() {
         Assertions.assertThat(RedisStore.client(context)).isNull()

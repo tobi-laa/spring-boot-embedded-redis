@@ -1,6 +1,8 @@
 package io.github.tobi.laa.spring.boot.embedded.redis
 
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
+import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ObjectAssert
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
@@ -127,6 +129,11 @@ internal open class RedisTests(
             assertThat(props.cluster).isNull()
             return this
         }
+
+        fun shouldHaveNode(host: String, port: Int): RedisPropertiesAssertion {
+            assertThat(props.cluster.nodes).contains("$host:$port")
+            return this
+        }
     }
 
     inner class EmbeddedRedis {
@@ -137,7 +144,8 @@ internal open class RedisTests(
 
         @Suppress("UNCHECKED_CAST")
         fun shouldHaveConfig(): RedisConfAssertion {
-            val conf = context?.let { RedisStore.conf(it) }!!
+            val server = context?.let { RedisStore.server(it) }!!
+            val conf = RedisConfParser.parse(RedisConfLocator.locate(server))
             return RedisConfAssertion(conf)
         }
     }

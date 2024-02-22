@@ -1,8 +1,7 @@
 package io.github.tobi.laa.spring.boot.embedded.redis
 
-import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
 import org.springframework.context.ApplicationContext
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 import java.util.concurrent.ConcurrentHashMap
 
@@ -11,11 +10,11 @@ import java.util.concurrent.ConcurrentHashMap
  */
 internal object RedisStore {
 
-    private val internalStore = ConcurrentHashMap<ApplicationContext, Triple<Redis, RedisConf, JedisPooled>>()
+    private val internalStore = ConcurrentHashMap<ApplicationContext, Pair<Redis, UnifiedJedis>>()
 
     internal fun computeIfAbsent(
         context: ApplicationContext,
-        supplier: () -> Triple<Redis, RedisConf, JedisPooled>
+        supplier: () -> Pair<Redis, UnifiedJedis>
     ) {
         internalStore.computeIfAbsent(context) { _ -> supplier.invoke() }
     }
@@ -24,11 +23,7 @@ internal object RedisStore {
         return internalStore[context]?.first
     }
 
-    internal fun conf(context: ApplicationContext): RedisConf? {
+    internal fun client(context: ApplicationContext): UnifiedJedis? {
         return internalStore[context]?.second
-    }
-
-    internal fun client(context: ApplicationContext): JedisPooled? {
-        return internalStore[context]?.third
     }
 }

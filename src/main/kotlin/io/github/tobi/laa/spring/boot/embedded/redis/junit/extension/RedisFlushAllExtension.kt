@@ -8,6 +8,9 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.test.context.junit.jupiter.SpringExtension.getApplicationContext
+import redis.clients.jedis.JedisCluster
+import redis.clients.jedis.Protocol.Command.FLUSHALL
+import redis.clients.jedis.UnifiedJedis
 
 /**
  * JUnit 5 extension to flush all Redis data after each test method or after all test methods of a test class.
@@ -33,6 +36,13 @@ internal class RedisFlushAllExtension : AfterEachCallback, AfterAllCallback {
 
     private fun flushAll(extensionContext: ExtensionContext?) {
         val applicationContext = getApplicationContext(extensionContext!!)
-        RedisStore.client(applicationContext)!!.flushAll()
+        flushAll(RedisStore.client(applicationContext)!!)
+    }
+
+    private fun flushAll(client: UnifiedJedis) {
+        when (client) {
+            is JedisCluster -> client.clusterNodes.values.forEach { it.resource.sendCommand(FLUSHALL) }
+            else -> client.flushAll()
+        }
     }
 }

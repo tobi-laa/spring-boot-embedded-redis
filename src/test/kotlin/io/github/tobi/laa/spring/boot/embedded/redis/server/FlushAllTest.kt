@@ -1,6 +1,8 @@
-package io.github.tobi.laa.spring.boot.embedded.redis
+package io.github.tobi.laa.spring.boot.embedded.redis.server
 
-import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
+import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -9,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @EmbeddedRedisServer
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestClassOrder(ClassOrderer.OrderAnnotation::class)
-@DisplayName("Test @RedisFlushAll annotation")
+@DisplayName("Test @RedisFlushAll annotation for standalone Redis server")
 internal class FlushAllTest {
 
     @Autowired
