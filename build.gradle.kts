@@ -13,6 +13,7 @@ plugins {
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "4.4.1.3373"
     val gradleReleasePluginVersion = "3.0.2"
+    val gradleNexusPublishPluginVersion = "2.0.0-rc-2"
 
     kotlin("jvm") version kotlinVersion
     id("io.spring.dependency-management") version springDependencyManagementVersion
@@ -23,6 +24,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("net.researchgate.release") version gradleReleasePluginVersion
+    id("io.github.gradle-nexus.publish-plugin") version gradleNexusPublishPluginVersion
 }
 
 group = "io.github.tobi-laa"
@@ -87,6 +89,17 @@ tasks.jacocoTestReport {
     }
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username = System.getenv("OSSRH_USERNAME")
+            password = System.getenv("OSSRH_TOKEN")
+        }
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -133,18 +146,6 @@ publishing {
                     url = "https://github.com/tobias-laa/spring-boot-embedded-redis/issues"
                 }
                 inceptionYear = "2024"
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = "ossrh"
-            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
-            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_TOKEN")
             }
         }
     }
