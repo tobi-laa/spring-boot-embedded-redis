@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val springBootVersion = "3.2.3"
+val junitPlatformVersion = "1.10.2"
 val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.1"
 val mockkVersion = "1.13.9"
@@ -60,6 +61,7 @@ dependencies {
     compileOnly("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.platform:junit-platform-testkit")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.jayway.jsonpath:json-path:$jsonPathVersion") // override transitive dep due to CVE violation
@@ -76,6 +78,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    exclude("**/RedisValidationExtensionTest$*")
 }
 
 tasks.jacocoTestReport {

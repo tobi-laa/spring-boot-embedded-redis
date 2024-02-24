@@ -60,10 +60,10 @@ internal class RedisShardedClusterContextCustomizer(
 
     private fun ports(): List<Int> {
         return if (config.ports.isEmpty()) {
-            val nOfNodes = config.shards.map { it.replicas + 1 }.sum()
+            val nOfNodes = config.shards.sumOf { it.replicas + 1 }
             range(0, nOfNodes).map { _ -> portProvider.next() }.toList()
         } else {
-            config.ports.asList()
+            config.ports.map { if (it == 0) portProvider.next() else it }.toList()
         }
     }
 

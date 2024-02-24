@@ -1,6 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.server
 
-import io.github.tobi.laa.spring.boot.embedded.redis.findTestClassAnnotation
+import io.github.tobi.laa.spring.boot.embedded.redis.findTestClassAnnotations
 import org.springframework.test.context.ContextConfigurationAttributes
 import org.springframework.test.context.ContextCustomizer
 import org.springframework.test.context.ContextCustomizerFactory
@@ -11,7 +11,7 @@ internal class RedisServerContextCustomizerFactory : ContextCustomizerFactory {
         testClass: Class<*>,
         configAttributes: MutableList<ContextConfigurationAttributes>
     ): ContextCustomizer {
-        val embeddedRedisServer = findTestClassAnnotation(testClass, EmbeddedRedisServer::class.java)
+        val embeddedRedisServer = findTestClassAnnotations(testClass, EmbeddedRedisServer::class.java).firstOrNull()
         return RedisServerContextCustomizer(embeddedRedisServer!!)
     }
 }
