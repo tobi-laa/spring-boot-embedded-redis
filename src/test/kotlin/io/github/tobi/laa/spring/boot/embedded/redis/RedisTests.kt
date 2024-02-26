@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component
 import redis.embedded.RedisShardedCluster
 import java.time.Duration
 import java.util.*
+import java.util.Collections.singletonList
 import kotlin.random.Random
 
 private val INITIALIZATION_TIMEOUT_PROP = RedisShardedCluster::class.java.declaredFields
@@ -152,7 +153,12 @@ internal open class RedisTests(
         @Suppress("UNCHECKED_CAST")
         fun shouldHaveConfig(): RedisConfAssertion {
             val server = context?.let { RedisStore.server(it) }!!
-            val conf = RedisConfParser.parse(RedisConfLocator.locate(server))
+            val conf =
+                if (server is RedisShardedCluster) {
+                    server.servers().map { RedisConfParser.parse(RedisConfLocator.locate(it)) }.toList()
+                } else {
+                    singletonList(RedisConfParser.parse(RedisConfLocator.locate(server)))
+                }
             return RedisConfAssertion(conf)
         }
 
@@ -165,7 +171,7 @@ internal open class RedisTests(
         }
     }
 
-    inner class RedisConfAssertion(val conf: RedisConf) {
+    inner class RedisConfAssertion(val conf: List<RedisConf>) {
 
         fun and(): RedisConfAssertion {
             return this
@@ -180,7 +186,7 @@ internal open class RedisTests(
         }
 
         fun thatContainsDirective(directive: RedisConf.Directive): RedisConfAssertion {
-            assertThat(conf.directives).contains(directive)
+            assertThat(conf.flatMap { it.directives }.toList()).contains(directive)
             return this
         }
     }
