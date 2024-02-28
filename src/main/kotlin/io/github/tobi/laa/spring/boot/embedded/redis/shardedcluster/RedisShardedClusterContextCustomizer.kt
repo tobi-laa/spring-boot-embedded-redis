@@ -30,6 +30,8 @@ internal class RedisShardedClusterContextCustomizer(
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
+    private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
+
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
             val cluster = createAndStartCluster()
@@ -63,8 +65,16 @@ internal class RedisShardedClusterContextCustomizer(
             val nOfNodes = config.shards.sumOf { it.replicas + 1 }
             range(0, nOfNodes).map { _ -> portProvider.next() }.toList()
         } else {
-            config.ports.map { if (it == 0) portProvider.next() else it }.toList()
+            config.ports.map { if (it == 0) unspecifiedUnusedPort() else it }.toList()
         }
+    }
+
+    private fun unspecifiedUnusedPort(): Int {
+        var port = portProvider.next()
+        while (port in config.ports) {
+            port = portProvider.next()
+        }
+        return port
     }
 
     private fun createShard(
@@ -74,10 +84,10 @@ internal class RedisShardedClusterContextCustomizer(
         val name = shard.name.ifEmpty { BirdNameProvider.next() }
 
         val mainNodeBuilder = createNodeBuilder(ports.next())
-        config.customizer.forEach { c -> c.createInstance().customizeMainNode(mainNodeBuilder, config, name) }
+        customizer.forEach { c -> c.customizeMainNode(mainNodeBuilder, config, name) }
 
         val replicaBuilders = range(0, shard.replicas).mapToObj { _ -> createNodeBuilder(ports.next()) }.toList()
-        config.customizer.forEach { c -> c.createInstance().customizeReplicas(replicaBuilders, config, name) }
+        customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config, name) }
 
         return mainNodeBuilder.build() to replicaBuilders.map { it.build() }
     }

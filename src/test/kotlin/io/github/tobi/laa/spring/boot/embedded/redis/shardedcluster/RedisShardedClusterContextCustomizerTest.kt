@@ -2,20 +2,35 @@ package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 
 @DisplayName("Tests for RedisShardedClusterContextCustomizer")
+@ExtendWith(MockKExtension::class)
 internal class RedisShardedClusterContextCustomizerTest {
 
-    private val givenCustomizer =
-        RedisShardedClusterContextCustomizer(mockk<EmbeddedRedisShardedCluster>(), mockk<PortProvider>())
+    @MockK
+    private lateinit var portProvider: PortProvider
+
+    private val config = EmbeddedRedisShardedCluster()
+
+    private lateinit var givenCustomizer: RedisShardedClusterContextCustomizer
+
+    @BeforeEach
+    fun init() {
+        givenCustomizer = RedisShardedClusterContextCustomizer(config, portProvider)
+    }
+
 
     @Test
     @DisplayName("RedisShardedClusterContextCustomizer.equals() should be true for itself")

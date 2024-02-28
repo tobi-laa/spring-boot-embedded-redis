@@ -149,8 +149,7 @@ internal open class RedisTests(
         fun andAlso(): RedisTests {
             return this@RedisTests
         }
-
-        @Suppress("UNCHECKED_CAST")
+        
         fun shouldHaveConfig(): RedisConfAssertion {
             val server = context?.let { RedisStore.server(it) }!!
             val conf =
