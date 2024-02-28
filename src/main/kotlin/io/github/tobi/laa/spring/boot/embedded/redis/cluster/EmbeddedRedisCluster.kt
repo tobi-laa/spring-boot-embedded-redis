@@ -22,7 +22,7 @@ annotation class EmbeddedRedisCluster(
     val replicationGroups: Array<ReplicationGroup> = [ReplicationGroup()],
 
     /**
-     * The sentinels of the Redis cluster. Must contain at least one sentinel.
+     * The sentinels of the Redis cluster. May be empty, in which case no sentinels will be started.
      *
      * @see redis.embedded.RedisCluster.sentinels
      */
@@ -65,7 +65,7 @@ annotation class EmbeddedRedisCluster(
 
         /**
          * The ports to start the nodes of this replication group on. Can be left empty, in which case free ports
-         * upwards from `6379` will be automatically used.
+         * upwards from `6379` will be automatically used. Ports with the value `0` will be replaced with free ports.
          *
          * The first port will be used for the main node, the rest for the replicas.
          *
@@ -102,6 +102,9 @@ annotation class EmbeddedRedisCluster(
 
         /**
          * The names of the replication groups to monitor. If not set, all replication groups will be monitored.
+         *
+         * > **Warning**
+         * If specified, all names must be the name of a replication group.
          *
          * @see ReplicationGroup.name
          */

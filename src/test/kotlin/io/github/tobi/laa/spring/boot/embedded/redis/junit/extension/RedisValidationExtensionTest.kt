@@ -1,13 +1,15 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.ReplicationGroup
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisClusterCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
 import io.github.tobi.laa.spring.boot.embedded.redis.server.RedisServerCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster.Shard
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.RedisShardCustomizer
 import org.assertj.core.api.ListAssert
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Named.named
 import org.junit.jupiter.api.Test
@@ -24,6 +26,7 @@ import org.junit.platform.testkit.engine.Event
 import org.junit.platform.testkit.engine.EventConditions.event
 import org.junit.platform.testkit.engine.EventConditions.finishedWithFailure
 import org.junit.platform.testkit.engine.TestExecutionResultConditions.message
+import redis.embedded.core.RedisSentinelBuilder
 import redis.embedded.core.RedisServerBuilder
 import java.util.stream.Stream
 
@@ -49,7 +52,7 @@ internal class RedisValidationExtensionTest {
     }
 
     @ParameterizedTest(name = "@EmbeddedRedisServer with port {0} should fail")
-    @ArgumentsSource(EmbeddedRedisServerWithInvalidPortProvider::class)
+    @ArgumentsSource(ServerWithInvalidPortProvider::class)
     fun embeddedRedis_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
@@ -93,8 +96,23 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @Test
+    @DisplayName("@EmbeddedRedisShardedCluster with no shards should fail")
+    fun embeddedRedisShardedCluster_noShards_executingTests_shouldFail() {
+        givenTestClass(NoShards::class.java)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Shards must not be empty")
+                    )
+                )
+            )
+    }
+
     @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with {0} should fail")
-    @ArgumentsSource(EmbeddedRedisShardedClusterWithInvalidNOfReplicasProvider::class)
+    @ArgumentsSource(ShardedClusterWithInvalidNOfReplicasProvider::class)
     fun embeddedRedisShardedCluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
@@ -109,7 +127,7 @@ internal class RedisValidationExtensionTest {
     }
 
     @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with {0} should fail")
-    @ArgumentsSource(EmbeddedRedisShardedClusterWithInvalidNOfPortsProvider::class)
+    @ArgumentsSource(ShardedClusterWithInvalidNOfPortsProvider::class)
     fun embeddedRedisShardedCluster_invalidNOfPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
@@ -124,7 +142,7 @@ internal class RedisValidationExtensionTest {
     }
 
     @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with ports {0} should fail")
-    @ArgumentsSource(EmbeddedRedisShardedClusterWithInvalidPortsProvider::class)
+    @ArgumentsSource(ShardedClusterWithInvalidPortsProvider::class)
     fun embeddedRedisShardedCluster_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
@@ -138,8 +156,23 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @Test
+    @DisplayName("@EmbeddedRedisShardedCluster with duplicate ports should fail")
+    fun embeddedRedisShardedCluster_portsSpecifiedMoreThanOnce_executingTests_shouldFail() {
+        givenTestClass(ShardedClusterWithDuplicatePorts::class.java)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Ports must not be specified more than once")
+                    )
+                )
+            )
+    }
+
     @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with initialization timeout {0} should fail")
-    @ArgumentsSource(EmbeddedRedisShardedClusterWithInvalidInitTimeoutProvider::class)
+    @ArgumentsSource(ShardedClusterWithInvalidInitTimeoutProvider::class)
     fun embeddedRedisShardedCluster_invalidInitTimeout_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
@@ -169,9 +202,108 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @Disabled
-    fun embeddedRedisClusterTestClassWithInvalidPort_executingTests_shouldFail() {
-        TODO()
+    @DisplayName("@EmbeddedRedisCluster with no replication groups should fail")
+    fun embeddedRedisCluster_noReplicationGroups_executingTests_shouldFail() {
+        givenTestClass(NoReplicationGroups::class.java)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Replication groups must not be empty")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidNOfReplicasProvider::class)
+    fun embeddedRedisCluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Replicas for all replication groups must be greater than 0")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidNOfPortsProvider::class)
+    fun embeddedRedisCluster_invalidNOfPorts_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("If ports are specified, they must match the number of nodes")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with ports {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidPortsProvider::class)
+    fun embeddedRedisCluster_invalidPorts_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("All ports must be in range 0..65535")
+                    )
+                )
+            )
+    }
+
+    @Test
+    @DisplayName("@EmbeddedRedisCluster with sentinel with unknown monitored group should fail")
+    fun embeddedRedisCluster_sentinelWithUnknownMonitoredGroup_executingTests_shouldFail() {
+        givenTestClass(SentinelWithUnknownMonitoredGroup::class.java)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("All monitored groups must be present in a replication group")
+                    )
+                )
+            )
+    }
+
+    @Test
+    @DisplayName("@EmbeddedRedisCluster with customizer that does not have a no-args constructor should fail")
+    fun embeddedRedisCluster_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
+        givenTestClass(ClusterWithCustomizerWithoutNoArgsConstructor::class.java)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Customizers must have a no-arg constructor")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
+    @ArgumentsSource(ClusterWithDuplicatePortsProvider::class)
+    fun embeddedRedisCluster_portsSpecifiedMoreThanOnce_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Ports must not be specified more than once")
+                    )
+                )
+            )
     }
 
     private fun givenTestClass(clazz: Class<*>) {
@@ -237,7 +369,7 @@ internal class RedisValidationExtensionTest {
         annotation class SneakyBastard
     }
 
-    internal class EmbeddedRedisServerWithInvalidPortProvider : ArgumentsProvider {
+    internal class ServerWithInvalidPortProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -269,7 +401,10 @@ internal class RedisValidationExtensionTest {
         }
     }
 
-    internal class EmbeddedRedisShardedClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
+    @EmbeddedRedisShardedCluster(shards = [])
+    internal class NoShards : WithDummyTest()
+
+    internal class ShardedClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -285,7 +420,7 @@ internal class RedisValidationExtensionTest {
         internal class ZeroReplicas : WithDummyTest()
     }
 
-    internal class EmbeddedRedisShardedClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
+    internal class ShardedClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -311,7 +446,7 @@ internal class RedisValidationExtensionTest {
         internal class FourNodesButThreePorts : WithDummyTest()
     }
 
-    internal class EmbeddedRedisShardedClusterWithInvalidPortsProvider : ArgumentsProvider {
+    internal class ShardedClusterWithInvalidPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -327,7 +462,10 @@ internal class RedisValidationExtensionTest {
         internal class Port65536 : WithDummyTest()
     }
 
-    internal class EmbeddedRedisShardedClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
+    @EmbeddedRedisShardedCluster(ports = [1, 2, 2])
+    internal class ShardedClusterWithDuplicatePorts : WithDummyTest()
+
+    internal class ShardedClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -363,6 +501,138 @@ internal class RedisValidationExtensionTest {
         ) {
             // no-op
         }
+    }
+
+    @EmbeddedRedisCluster(replicationGroups = [])
+    internal class NoReplicationGroups : WithDummyTest()
+
+    internal class ClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("a group with a negative number of replicas", NegativeReplicas::class.java)),
+                arguments(named("a group with 0 replicas", ZeroReplicas::class.java))
+            )
+        }
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(replicas = -1)])
+        internal class NegativeReplicas : WithDummyTest()
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(replicas = 0)])
+        internal class ZeroReplicas : WithDummyTest()
+    }
+
+    internal class ClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(
+                    named(
+                        "1 group with 2 replicas but 2 ports (3 are needed)",
+                        ThreeNodesButTwoPorts::class.java
+                    )
+                ),
+                arguments(
+                    named(
+                        "2 groups with 1 replica but the second one has 3 ports (2 are needed)",
+                        FourNodesButThreePorts::class.java
+                    )
+                )
+            )
+        }
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2])])
+        internal class ThreeNodesButTwoPorts : WithDummyTest()
+
+        @EmbeddedRedisCluster(
+            replicationGroups = [
+                ReplicationGroup(replicas = 1, ports = [1, 2]),
+                ReplicationGroup(replicas = 1, ports = [3, 4, 5])]
+        )
+        internal class FourNodesButThreePorts : WithDummyTest()
+    }
+
+    internal class ClusterWithInvalidPortsProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("that include a negative number", NegativePort::class.java)),
+                arguments(named("that include a negative number for a sentinel", NegativePortSentinel::class.java)),
+                arguments(named("that include 65536", Port65536::class.java)),
+                arguments(named("that include 65536 for a sentinel", Port65536Sentinel::class.java))
+            )
+        }
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [-1, 1, 2])])
+        internal class NegativePort : WithDummyTest()
+
+        @EmbeddedRedisCluster(sentinels = [Sentinel(port = -1)])
+        internal class NegativePortSentinel : WithDummyTest()
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [65534, 65535, 65536])])
+        internal class Port65536 : WithDummyTest()
+
+        @EmbeddedRedisCluster(sentinels = [Sentinel(port = 65536)])
+        internal class Port65536Sentinel : WithDummyTest()
+    }
+
+    @EmbeddedRedisCluster(sentinels = [Sentinel(port = 1, monitoredGroups = ["unknown"])])
+    internal class SentinelWithUnknownMonitoredGroup : WithDummyTest()
+
+    @EmbeddedRedisCluster(customizer = [ClusterCustomizerWithoutNoArgsConstructor::class])
+    internal class ClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
+
+    internal class ClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisClusterCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster, group: String) {
+            // no-op
+        }
+
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster, group: String) {
+            // no-op
+        }
+
+        override fun customizeSentinels(
+            builder: RedisSentinelBuilder,
+            config: EmbeddedRedisCluster,
+            sentinelConfig: Sentinel
+        ) {
+            // no-op
+        }
+
+    }
+
+    internal class ClusterWithDuplicatePortsProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("duplicate ports within a replication group", DupPortsSingleGroup::class.java)),
+                arguments(named("duplicate ports across two replication groups", DupPortsTwoGroups::class.java)),
+                arguments(
+                    named(
+                        "duplicate ports across a replication group and a sentinel",
+                        DupPortsGroupAndSentinel::class.java
+                    )
+                ),
+                arguments(named("duplicate ports across two sentinels", DupPortsTwoSentinels::class.java)),
+            )
+        }
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2, 2])])
+        internal class DupPortsSingleGroup : WithDummyTest()
+
+        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2, 3]), ReplicationGroup(ports = [1, 2, 3])])
+        internal class DupPortsTwoGroups : WithDummyTest()
+
+        @EmbeddedRedisCluster(
+            replicationGroups = [ReplicationGroup(ports = [1, 2, 3])],
+            sentinels = [Sentinel(port = 1)]
+        )
+        internal class DupPortsGroupAndSentinel : WithDummyTest()
+
+        @EmbeddedRedisCluster(
+            sentinels = [Sentinel(port = 1), Sentinel(port = 1)]
+        )
+        internal class DupPortsTwoSentinels : WithDummyTest()
     }
 
     internal abstract class WithDummyTest {

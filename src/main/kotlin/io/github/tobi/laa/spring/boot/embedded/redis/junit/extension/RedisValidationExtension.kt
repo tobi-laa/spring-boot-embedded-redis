@@ -45,12 +45,42 @@ internal class RedisValidationExtension : BeforeAllCallback {
     }
 
     private fun validateCluster(config: EmbeddedRedisCluster) {
-        TODO()
+        validateReplicationGroups(config)
+        validateSentinels(config)
+        validateClusterPorts(config)
+        validateCustomizers(config.customizer)
+    }
+
+    private fun validateReplicationGroups(config: EmbeddedRedisCluster) {
+        require(config.replicationGroups.isNotEmpty()) { "Replication groups must not be empty" }
+        config.replicationGroups.forEach { group ->
+            require(group.replicas > 0) { "Replicas for all replication groups must be greater than 0" }
+            require(group.ports.isEmpty() || group.ports.size == group.replicas + 1) { "If ports are specified, they must match the number of nodes" }
+            require(group.ports.all { it in validPortRange }) { "All ports must be in range $validPortRange" }
+        }
+    }
+
+    private fun validateSentinels(config: EmbeddedRedisCluster) {
+        val names = config.replicationGroups.map { it.name }
+        config.sentinels.forEach { sentinel ->
+            require(sentinel.port in validPortRange) { "All ports must be in range $validPortRange" }
+            require(sentinel.monitoredGroups.all { it in names }) { "All monitored groups must be present in a replication group" }
+        }
+    }
+
+    private fun validateClusterPorts(config: EmbeddedRedisCluster) {
+        val allPorts =
+            config.replicationGroups.flatMap { it.ports.toList() }.filter { it != 0 } + config.sentinels.map { it.port }
+                .filter { it != 0 }
+        require(allPorts.distinct().size == allPorts.size) { "Ports must not be specified more than once" }
     }
 
     private fun validateShardedCluster(config: EmbeddedRedisShardedCluster) {
+        require(config.shards.isNotEmpty()) { "Shards must not be empty" }
         require(config.shards.all { it.replicas > 0 }) { "Replicas for all shards must be greater than 0" }
         require(config.ports.isEmpty() || config.ports.size == config.shards.sumOf { it.replicas + 1 }) { "If ports are specified, they must match the number of nodes" }
+        require(config.ports.filter { it != 0 }
+            .distinct().size == config.ports.filter { it != 0 }.size) { "Ports must not be specified more than once" }
         require(config.ports.all { it in validPortRange }) { "All ports must be in range $validPortRange" }
         require(config.initializationTimeout > 0) { "Initialization timeout must be greater than 0" }
         validateCustomizers(config.customizer)

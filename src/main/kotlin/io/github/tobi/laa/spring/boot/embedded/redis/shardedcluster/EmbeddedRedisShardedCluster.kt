@@ -23,11 +23,17 @@ annotation class EmbeddedRedisShardedCluster(
 
     /**
      * The ports to start the nodes of the embedded Redis cluster on. Can be left empty, in which case free ports
-     * upwards from `6379` will be automatically used.
+     * upwards from `6379` will be automatically used. Ports with the value `0` will be replaced with free ports.
      *
      * > **Warning**
      * If specified, the number of ports must be equal to the number of nodes in the cluster, that is, the sum of the
      * number of master and replica nodes.
+     *
+     * > **Warning**
+     * Ports must not be specified more than once.
+     *
+     * > **Warning**
+     * If a port is specified, the corresponding bus port must not be specified as well.
      *
      * @see redis.embedded.core.RedisShardedClusterBuilder.serverPorts
      */
