@@ -4,7 +4,7 @@ val springBootVersion = "3.2.3"
 val junitPlatformVersion = "1.10.2"
 val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.1"
-val mockkVersion = "1.13.9"
+val mockkVersion = "1.13.10"
 val archunitVersion = "1.2.1"
 
 plugins {
