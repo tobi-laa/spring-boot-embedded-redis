@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Scope
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
+import redis.embedded.RedisCluster
 import redis.embedded.RedisShardedCluster
 import java.time.Duration
 import java.util.*
@@ -149,7 +150,7 @@ internal open class RedisTests(
         fun andAlso(): RedisTests {
             return this@RedisTests
         }
-        
+
         fun shouldHaveConfig(): RedisConfAssertion {
             val server = context?.let { RedisStore.server(it) }!!
             val conf =
@@ -167,6 +168,14 @@ internal open class RedisTests(
             val configuredTimeout = INITIALIZATION_TIMEOUT_PROP[server as RedisShardedCluster]
             assertThat(configuredTimeout).isEqualTo(timeout)
             return this
+        }
+
+        fun shouldHaveSentinels(): RedisSentinelAssertion {
+            val server = context?.let { RedisStore.server(it) }!!
+            assertThat(server).isInstanceOf(RedisCluster::class.java)
+            val cluster = server as RedisCluster
+            assertThat(cluster.sentinels()).isNotNull()
+            return RedisSentinelAssertion(cluster.sentinels())
         }
     }
 
@@ -186,6 +195,67 @@ internal open class RedisTests(
 
         fun thatContainsDirective(directive: RedisConf.Directive): RedisConfAssertion {
             assertThat(conf.flatMap { it.directives }.toList()).contains(directive)
+            return this
+        }
+    }
+
+    inner class RedisSentinelAssertion(private val sentinels: List<redis.embedded.Redis>) {
+
+        val sentinelsAndConf = sentinels.map { it to RedisConfParser.parse(RedisConfLocator.locate(it)) }
+
+        fun and(): RedisSentinelAssertion {
+            return this
+        }
+
+        fun andAlso(): RedisTests {
+            return this@RedisTests
+        }
+
+        fun withOne(): RedisSentinelAssertion {
+            return this
+        }
+
+        fun withAtLeastOne(): RedisSentinelAssertion {
+            return this
+        }
+
+        fun thatHaveASizeOf(size: Int): RedisSentinelAssertion {
+            assertThat(sentinels).hasSize(size)
+            return this
+        }
+
+        fun thatRunsOn(bind: String, port: Int): RedisSentinelAssertion {
+            RedisConfAssertion(sentinelsAndConf.filter { it.first.ports().contains(port) }.map { it.second })
+                .thatContainsDirective("bind", bind)
+            return this
+        }
+
+        fun thatMonitors(
+            group: String,
+            bind: String,
+            port: Int,
+            quorumSize: Int = 1
+        ): RedisSentinelAssertion {
+            RedisConfAssertion(sentinelsAndConf.map { it.second })
+                .thatContainsDirective("sentinel", "monitor", group, bind, port.toString(), quorumSize.toString())
+            return this
+        }
+
+        fun thatHasDownAfterMillis(group: String, downAfterMillis: Long): RedisSentinelAssertion {
+            RedisConfAssertion(sentinelsAndConf.map { it.second })
+                .thatContainsDirective("sentinel", "down-after-milliseconds", group, downAfterMillis.toString())
+            return this
+        }
+
+        fun thatHasFailOverTimeoutMillis(group: String, failOverTimeoutMillis: Long): RedisSentinelAssertion {
+            RedisConfAssertion(sentinelsAndConf.map { it.second })
+                .thatContainsDirective("sentinel", "failover-timeout", group, failOverTimeoutMillis.toString())
+            return this
+        }
+
+        fun thatHasParallelSyncs(group: String, parallelSyncs: Int): RedisSentinelAssertion {
+            RedisConfAssertion(sentinelsAndConf.map { it.second })
+                .thatContainsDirective("sentinel", "parallel-syncs", group, parallelSyncs.toString())
             return this
         }
     }
