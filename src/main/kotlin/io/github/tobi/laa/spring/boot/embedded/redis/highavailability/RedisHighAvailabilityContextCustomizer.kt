@@ -159,7 +159,7 @@ internal class RedisHighAvailabilityContextCustomizer(
     private fun createClient(sentinelAddresses: List<Pair<String, Int>>): RedisClient {
         val jedisSentinelPool =
             JedisSentinelPool(name, sentinelAddresses.map { createAddress(it.first, it.second) }.toSet())
-        return JedisHighAvailabilityClient(jedisSentinelPool)
+        return RedisHighAvailabilityClient(jedisSentinelPool)
     }
 
     private fun setSpringProperties(

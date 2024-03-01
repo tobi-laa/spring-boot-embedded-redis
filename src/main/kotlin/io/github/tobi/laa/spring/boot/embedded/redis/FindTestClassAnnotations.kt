@@ -17,7 +17,6 @@ internal fun <T : Annotation> findTestClassAnnotations(
     return mergedAnnotations
         .stream()
         .flatMap { it.stream(annotationType) }
-        .filter { it != null }
         .map { it.synthesize() }
         .toList()
 }

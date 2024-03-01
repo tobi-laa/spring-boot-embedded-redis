@@ -3,7 +3,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import redis.clients.jedis.JedisSentinelPool
 
-internal class JedisHighAvailabilityClient(private val jedisSentinelPool: JedisSentinelPool) : RedisClient {
+internal class RedisHighAvailabilityClient(private val jedisSentinelPool: JedisSentinelPool) : RedisClient {
 
     override fun flushAll(): String = jedisSentinelPool.resource.flushAll()
 
