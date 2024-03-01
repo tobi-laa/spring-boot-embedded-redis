@@ -170,6 +170,14 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @Test
+    @DisplayName("@EmbeddedRedisCluster with port 0 specified multiple times should not fail")
+    fun cluster_portZeroSpecifiedMultipleTimes_executingTests_shouldFail() {
+        givenTestClass(ClusterPortZeroSpecifiedMultipleTimes::class.java)
+        whenExecutingTests()
+        thenEvents().doNotHave(event(finishedWithFailure()))
+    }
+
     @ParameterizedTest(name = "@EmbeddedRedisCluster with initialization timeout {0} should fail")
     @ArgumentsSource(ClusterWithInvalidInitTimeoutProvider::class)
     fun cluster_invalidInitTimeout_executingTests_shouldFail(clazz: Class<*>) {
@@ -335,6 +343,14 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @Test
+    @DisplayName("@EmbeddedRedisHighAvailability with port 0 specified multiple times should not fail")
+    fun highAvailability_portZeroSpecifiedMultipleTimes_executingTests_shouldFail() {
+        givenTestClass(HighAvailabilityPortZeroSpecifiedMultipleTimes::class.java)
+        whenExecutingTests()
+        thenEvents().doNotHave(event(finishedWithFailure()))
+    }
+
     private fun givenTestClass(clazz: Class<*>) {
         testKitBuilder = EngineTestKit
             .engine("junit-jupiter")
@@ -498,6 +514,9 @@ internal class RedisValidationExtensionTest {
 
     @EmbeddedRedisCluster(ports = [1, 2, 2])
     internal class ClusterWithDuplicatePorts : WithDummyTest()
+
+    @EmbeddedRedisCluster(ports = [0, 0, 1])
+    internal class ClusterPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
     internal class ClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
 
@@ -697,6 +716,9 @@ internal class RedisValidationExtensionTest {
         @EmbeddedRedisHighAvailability(sentinels = [Sentinel(port = 1), Sentinel(port = 1)])
         internal class DupPortsTwoSentinels : WithDummyTest()
     }
+
+    @EmbeddedRedisHighAvailability(ports = [0, 0, 1], sentinels = [Sentinel(port = 0)])
+    internal class HighAvailabilityPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
     internal abstract class WithDummyTest {
         @Test
