@@ -52,26 +52,23 @@ internal class RedisValidationExtension : BeforeAllCallback {
     }
 
     private fun validateReplicationGroups(config: EmbeddedRedisCluster) {
-        require(config.replicationGroups.isNotEmpty()) { "Replication groups must not be empty" }
-        config.replicationGroups.forEach { group ->
-            require(group.replicas > 0) { "Replicas for all replication groups must be greater than 0" }
-            require(group.ports.isEmpty() || group.ports.size == group.replicas + 1) { "If ports are specified, they must match the number of nodes" }
-            require(group.ports.all { it in validPortRange }) { "All ports must be in range $validPortRange" }
-        }
+        require(config.replicas > 0) { "Replicas must be greater than 0" }
+        require(config.ports.isEmpty() || config.ports.size == config.replicas + 1) { "If ports are specified, they must match the number of nodes" }
+        require(config.ports.all { it in validPortRange }) { "All ports must be in range $validPortRange" }
     }
 
     private fun validateSentinels(config: EmbeddedRedisCluster) {
-        val names = config.replicationGroups.map { it.name }
+        require(config.sentinels.isNotEmpty()) { "Sentinels must not be empty" }
         config.sentinels.forEach { sentinel ->
             require(sentinel.port in validPortRange) { "All ports must be in range $validPortRange" }
-            require(sentinel.monitoredGroups.all { it in names }) { "All monitored groups must be present in a replication group" }
+            require(sentinel.downAfterMillis > 0) { "Timeout for unreachable nodes must be greater than 0" }
+            require(sentinel.failOverTimeoutMillis > 0) { "Failover timeout must be greater than 0" }
+            require(sentinel.parallelSyncs > 0) { "Parallel syncs must be greater than 0" }
         }
     }
 
     private fun validateClusterPorts(config: EmbeddedRedisCluster) {
-        val allPorts =
-            config.replicationGroups.flatMap { it.ports.toList() }.filter { it != 0 } + config.sentinels.map { it.port }
-                .filter { it != 0 }
+        val allPorts = config.ports.filter { it != 0 } + config.sentinels.map { it.port }.filter { it != 0 }
         require(allPorts.distinct().size == allPorts.size) { "Ports must not be specified more than once" }
     }
 

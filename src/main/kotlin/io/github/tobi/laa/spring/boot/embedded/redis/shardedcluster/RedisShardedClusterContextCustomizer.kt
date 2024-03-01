@@ -1,5 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
@@ -10,7 +11,6 @@ import org.springframework.test.context.ContextCustomizer
 import org.springframework.test.context.MergedContextConfiguration
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisCluster
-import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 import redis.embedded.RedisServer
 import redis.embedded.RedisServer.newRedisServer
@@ -111,8 +111,9 @@ internal class RedisShardedClusterContextCustomizer(
             .map { CLUSTER_IP to it.ports().first() }
             .toList()
 
-    private fun createClient(addresses: List<Pair<String, Int>>): JedisCluster {
-        return JedisCluster(addresses.map { HostAndPort(it.first, it.second) }.toSet())
+    private fun createClient(addresses: List<Pair<String, Int>>): RedisClient {
+        val jedisCluster = JedisCluster(addresses.map { HostAndPort(it.first, it.second) }.toSet())
+        return RedisClusterClient(jedisCluster)
     }
 
     private fun setSpringProperties(context: ConfigurableApplicationContext, addresses: List<Pair<String, Int>>) {
@@ -123,7 +124,7 @@ internal class RedisShardedClusterContextCustomizer(
         ).applyTo(context.environment)
     }
 
-    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: UnifiedJedis) {
+    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 client.close()

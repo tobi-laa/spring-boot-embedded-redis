@@ -1,7 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.ReplicationGroup
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisClusterCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
@@ -202,15 +201,15 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisCluster with no replication groups should fail")
+    @DisplayName("@EmbeddedRedisCluster with no sentinels should fail")
     fun embeddedRedisCluster_noReplicationGroups_executingTests_shouldFail() {
-        givenTestClass(NoReplicationGroups::class.java)
+        givenTestClass(NoSentinels::class.java)
         whenExecutingTests()
         thenEvents()
             .haveAtLeastOne(
                 event(
                     finishedWithFailure(
-                        message("Replication groups must not be empty")
+                        message("Sentinels must not be empty")
                     )
                 )
             )
@@ -225,7 +224,7 @@ internal class RedisValidationExtensionTest {
             .haveAtLeastOne(
                 event(
                     finishedWithFailure(
-                        message("Replicas for all replication groups must be greater than 0")
+                        message("Replicas must be greater than 0")
                     )
                 )
             )
@@ -256,21 +255,6 @@ internal class RedisValidationExtensionTest {
                 event(
                     finishedWithFailure(
                         message("All ports must be in range 0..65535")
-                    )
-                )
-            )
-    }
-
-    @Test
-    @DisplayName("@EmbeddedRedisCluster with sentinel with unknown monitored group should fail")
-    fun embeddedRedisCluster_sentinelWithUnknownMonitoredGroup_executingTests_shouldFail() {
-        givenTestClass(SentinelWithUnknownMonitoredGroup::class.java)
-        whenExecutingTests()
-        thenEvents()
-            .haveAtLeastOne(
-                event(
-                    finishedWithFailure(
-                        message("All monitored groups must be present in a replication group")
                     )
                 )
             )
@@ -503,22 +487,22 @@ internal class RedisValidationExtensionTest {
         }
     }
 
-    @EmbeddedRedisCluster(replicationGroups = [])
-    internal class NoReplicationGroups : WithDummyTest()
+    @EmbeddedRedisCluster(sentinels = [])
+    internal class NoSentinels : WithDummyTest()
 
     internal class ClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
-                arguments(named("a group with a negative number of replicas", NegativeReplicas::class.java)),
-                arguments(named("a group with 0 replicas", ZeroReplicas::class.java))
+                arguments(named("a negative number of replicas", NegativeReplicas::class.java)),
+                arguments(named("0 replicas", ZeroReplicas::class.java))
             )
         }
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(replicas = -1)])
+        @EmbeddedRedisCluster(replicas = -1)
         internal class NegativeReplicas : WithDummyTest()
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(replicas = 0)])
+        @EmbeddedRedisCluster(replicas = 0)
         internal class ZeroReplicas : WithDummyTest()
     }
 
@@ -528,27 +512,23 @@ internal class RedisValidationExtensionTest {
             return Stream.of(
                 arguments(
                     named(
-                        "1 group with 2 replicas but 2 ports (3 are needed)",
+                        "2 replicas but 2 ports (3 are needed)",
                         ThreeNodesButTwoPorts::class.java
                     )
                 ),
                 arguments(
                     named(
-                        "2 groups with 1 replica but the second one has 3 ports (2 are needed)",
+                        "1 replica but 3 ports (2 are needed)",
                         FourNodesButThreePorts::class.java
                     )
                 )
             )
         }
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2])])
+        @EmbeddedRedisCluster(ports = [1, 2])
         internal class ThreeNodesButTwoPorts : WithDummyTest()
 
-        @EmbeddedRedisCluster(
-            replicationGroups = [
-                ReplicationGroup(replicas = 1, ports = [1, 2]),
-                ReplicationGroup(replicas = 1, ports = [3, 4, 5])]
-        )
+        @EmbeddedRedisCluster(replicas = 1, ports = [1, 2, 3])
         internal class FourNodesButThreePorts : WithDummyTest()
     }
 
@@ -563,31 +543,28 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [-1, 1, 2])])
+        @EmbeddedRedisCluster(ports = [-1, 1, 2])
         internal class NegativePort : WithDummyTest()
 
         @EmbeddedRedisCluster(sentinels = [Sentinel(port = -1)])
         internal class NegativePortSentinel : WithDummyTest()
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [65534, 65535, 65536])])
+        @EmbeddedRedisCluster(ports = [65534, 65535, 65536])
         internal class Port65536 : WithDummyTest()
 
         @EmbeddedRedisCluster(sentinels = [Sentinel(port = 65536)])
         internal class Port65536Sentinel : WithDummyTest()
     }
 
-    @EmbeddedRedisCluster(sentinels = [Sentinel(port = 1, monitoredGroups = ["unknown"])])
-    internal class SentinelWithUnknownMonitoredGroup : WithDummyTest()
-
     @EmbeddedRedisCluster(customizer = [ClusterCustomizerWithoutNoArgsConstructor::class])
     internal class ClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
     internal class ClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster, group: String) {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster, group: String) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
             // no-op
         }
 
@@ -605,11 +582,9 @@ internal class RedisValidationExtensionTest {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
-                arguments(named("duplicate ports within a replication group", DupPortsSingleGroup::class.java)),
-                arguments(named("duplicate ports across two replication groups", DupPortsTwoGroups::class.java)),
                 arguments(
                     named(
-                        "duplicate ports across a replication group and a sentinel",
+                        "duplicate ports across nodes and a sentinel",
                         DupPortsGroupAndSentinel::class.java
                     )
                 ),
@@ -617,21 +592,10 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2, 2])])
-        internal class DupPortsSingleGroup : WithDummyTest()
-
-        @EmbeddedRedisCluster(replicationGroups = [ReplicationGroup(ports = [1, 2, 3]), ReplicationGroup(ports = [1, 2, 3])])
-        internal class DupPortsTwoGroups : WithDummyTest()
-
-        @EmbeddedRedisCluster(
-            replicationGroups = [ReplicationGroup(ports = [1, 2, 3])],
-            sentinels = [Sentinel(port = 1)]
-        )
+        @EmbeddedRedisCluster(ports = [1, 2, 3], sentinels = [Sentinel(port = 1)])
         internal class DupPortsGroupAndSentinel : WithDummyTest()
 
-        @EmbeddedRedisCluster(
-            sentinels = [Sentinel(port = 1), Sentinel(port = 1)]
-        )
+        @EmbeddedRedisCluster(sentinels = [Sentinel(port = 1), Sentinel(port = 1)])
         internal class DupPortsTwoSentinels : WithDummyTest()
     }
 

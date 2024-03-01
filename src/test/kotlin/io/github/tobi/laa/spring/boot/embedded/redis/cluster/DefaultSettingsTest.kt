@@ -2,7 +2,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.DefaultSettingsTest.GroupNameCapturingCustomizer
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.DefaultSettingsTest.NameCapturingCustomizer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,9 +10,9 @@ import redis.embedded.core.RedisSentinelBuilder
 import redis.embedded.core.RedisServerBuilder
 
 @IntegrationTest
-@EmbeddedRedisCluster(customizer = [GroupNameCapturingCustomizer::class])
+@EmbeddedRedisCluster(customizer = [NameCapturingCustomizer::class])
 @DisplayName("Using @EmbeddedRedisCluster with default settings")
-internal open class DefaultSettingsTest {
+internal class DefaultSettingsTest {
 
     @Autowired
     private lateinit var given: RedisTests
@@ -23,21 +23,21 @@ internal open class DefaultSettingsTest {
         given.nothing()
             .whenDoingNothing()
             .then().redisProperties()
-            .shouldBeCluster()
-            .shouldHaveNode("localhost", 6379)
-            .shouldHaveNode("localhost", 6380)
-            .shouldHaveNode("localhost", 6381)
+            .shouldBeSentinel()
+            .shouldHaveNode("localhost", 26379)
     }
 
     @Test
-    @DisplayName("A sentinel monitoring the single replication group should have been started with default values")
-    fun sentinelMonitoringSingleReplicationGroupShouldHaveDefaultValues() {
+    @DisplayName("Three nodes should have been started with default values")
+    fun nodesShouldHaveDefaultValues() {
         given.nothing()
             .whenDoingNothing()
             .then().embeddedRedis()
-            .shouldHaveSentinels()
-            .thatHaveASizeOf(1)
-            .withAtLeastOne().thatMonitors(group, "localhost", 6379)
+            .shouldHaveNodes()
+            .thatHaveASizeOf(3)
+            .withOne().thatRunsOn("::1", 6379)
+            .and().withOne().thatRunsOn("::1", 6380)
+            .and().withOne().thatRunsOn("::1", 6381)
     }
 
     @Test
@@ -49,23 +49,21 @@ internal open class DefaultSettingsTest {
     }
 
     companion object {
-        lateinit var group: String
+        lateinit var name: String
     }
 
-    internal class GroupNameCapturingCustomizer : RedisClusterCustomizer {
+    internal class NameCapturingCustomizer : RedisClusterCustomizer {
 
         override fun customizeMainNode(
             builder: RedisServerBuilder,
-            config: EmbeddedRedisCluster,
-            group: String
+            config: EmbeddedRedisCluster
         ) {
-            DefaultSettingsTest.group = group
+            name = config.name
         }
 
         override fun customizeReplicas(
             builder: List<RedisServerBuilder>,
-            config: EmbeddedRedisCluster,
-            group: String
+            config: EmbeddedRedisCluster
         ) {
             // no-op
         }

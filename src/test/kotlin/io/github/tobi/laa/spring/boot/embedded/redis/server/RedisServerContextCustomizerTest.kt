@@ -1,5 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.server
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import io.mockk.mockk
@@ -8,7 +9,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
-import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 
 @DisplayName("Tests for RedisServerContextCustomizer")
@@ -41,7 +41,7 @@ internal class RedisServerContextCustomizerTest {
     @DisplayName("Closing ApplicationContext should stop Redis server and Redis client")
     fun closingApplicationContext_shouldStopRedisServerAndRedisClient() {
         var server: Redis?
-        var client: UnifiedJedis?
+        var client: RedisClient?
         AnnotationConfigApplicationContext().use {
             RedisServerContextCustomizerFactory()
                 .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())

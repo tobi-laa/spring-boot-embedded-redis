@@ -1,5 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.server
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
@@ -61,8 +62,9 @@ internal class RedisServerContextCustomizer(
     private fun parseConf(server: Redis): RedisConf =
         RedisConfLocator.locate(server).let { return RedisConfParser.parse(it) }
 
-    private fun createClient(server: Redis, conf: RedisConf): JedisPooled {
-        return JedisPooled(conf.getBinds().first(), server.ports().first())
+    private fun createClient(server: Redis, conf: RedisConf): RedisClient {
+        val jedisPooled = JedisPooled(conf.getBinds().first(), server.ports().first())
+        return RedisStandaloneClient(jedisPooled)
     }
 
     private fun setSpringProperties(context: ConfigurableApplicationContext, server: Redis, conf: RedisConf) {
@@ -74,7 +76,7 @@ internal class RedisServerContextCustomizer(
         ).applyTo(context.environment)
     }
 
-    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: JedisPooled) {
+    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 client.close()

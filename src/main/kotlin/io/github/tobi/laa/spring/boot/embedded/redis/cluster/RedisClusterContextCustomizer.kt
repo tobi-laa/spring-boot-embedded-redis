@@ -1,8 +1,8 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.ReplicationGroup
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
@@ -11,9 +11,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.test.context.ContextCustomizer
 import org.springframework.test.context.MergedContextConfiguration
-import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.JedisCluster
-import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.JedisSentinelPool
 import redis.embedded.Redis
 import redis.embedded.RedisCluster
 import redis.embedded.RedisSentinel
@@ -25,7 +23,7 @@ import java.util.stream.IntStream
 import kotlin.reflect.full.createInstance
 import kotlin.streams.toList
 
-private const val DEFAULT_BIND = "localhost"
+private const val DEFAULT_BIND = "::1"
 private const val QUORUM_SIZE = (1 / 2) + 1 // quorom size for one main node
 
 internal class RedisClusterContextCustomizer(
@@ -34,72 +32,72 @@ internal class RedisClusterContextCustomizer(
 ) : ContextCustomizer {
 
     private val manuallySpecifiedPorts =
-        config.replicationGroups.map { it.ports.toList() }.flatten().filter { it != 0 }.toSet() +
-                config.sentinels.map { it.port }.filter { it != 0 }.toSet()
-
+        config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
+    private val name = config.name.ifEmpty { BirdNameProvider.next() }.replace(Regex("[^a-zA-Z0-9]"), "")
+    private lateinit var nodePorts: Iterator<Int>
+    private lateinit var nodeBinds: Iterator<String>
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
-            val cluster = createAndStartCluster()
-            val addresses = parseAddresses(cluster)
-            val client = createClient(addresses)
-            setSpringProperties(context, addresses)
+            val cluster = createAndStartCluster(context)
+            val sentinelAddresses = parseSentinelAddresses(cluster)
+            val client = createClient(sentinelAddresses)
+            setSpringProperties(context, sentinelAddresses)
             addShutdownListener(context, cluster, client)
             Pair(cluster, client)
         }
     }
 
-    private fun createAndStartCluster(): RedisCluster {
-        val cluster = createCluster()
+    private fun createAndStartCluster(context: ConfigurableApplicationContext): RedisCluster {
+        nodePorts = ports().iterator()
+        nodeBinds = binds().iterator()
+        val cluster = createCluster(context)
         cluster.start()
         return cluster
     }
 
-    private fun createCluster(): RedisCluster {
-        val replicationGroups = config.replicationGroups.map { createReplicationGroup(it) }.associateBy { it.first }
-        val sentinels = config.sentinels.map { createSentinel(it, replicationGroups) }
-        return RedisCluster(sentinels, replicationGroups.values.flatMap { it.third + it.second.node }.toList())
+    private fun createCluster(context: ConfigurableApplicationContext): RedisCluster {
+        val replicationGroup = createReplicationGroup(context)
+        val sentinels = config.sentinels.map { createSentinel(it, replicationGroup) }
+        return RedisCluster(sentinels, replicationGroup.second + replicationGroup.first.node)
     }
 
-    private fun createReplicationGroup(groupConfig: ReplicationGroup): Triple<String, Node, List<RedisServer>> {
-        val group = Group(
-            groupConfig.name.ifEmpty { BirdNameProvider.next() },
-            ports(groupConfig).iterator(),
-            binds(groupConfig).iterator(),
-            groupConfig
-        )
-
-        val mainNode = createAndStartMainNode(group)
+    private fun createReplicationGroup(context: ConfigurableApplicationContext): Pair<Node, List<RedisServer>> {
+        val mainNode = createAndStartMainNode(context)
         val replicaBuilders =
-            IntStream.range(0, groupConfig.replicas)
-                .mapToObj { _ -> createReplicaBuilder(mainNode, group) }
+            IntStream.range(0, config.replicas)
+                .mapToObj { _ -> createReplicaBuilder(mainNode) }
                 .toList()
-        customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config, group.name) }
+        customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config) }
 
-        return Triple(group.name, mainNode, replicaBuilders.map { it.build() })
+        return Pair(mainNode, replicaBuilders.map { it.build() })
     }
 
-    private fun createAndStartMainNode(group: Group): Node {
+    private fun createAndStartMainNode(context: ConfigurableApplicationContext): Node {
         val builder = RedisServer.newRedisServer()
-            .bind(group.binds.next())
-            .port(group.ports.next())
+            .bind(nodeBinds.next())
+            .port(nodePorts.next())
         if (config.executeInDirectory.isNotEmpty()) {
             builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
         }
-        customizer.forEach { c -> c.customizeMainNode(builder, config, group.name) }
+        customizer.forEach { c -> c.customizeMainNode(builder, config) }
         val mainNode = builder.build()
         mainNode.start()
+        context.addApplicationListener { event ->
+            if (event is ContextClosedEvent) {
+                mainNode.stop()
+            }
+        }
         return Node(mainNode)
     }
 
     private fun createReplicaBuilder(
-        mainNode: Node,
-        group: Group
+        mainNode: Node
     ): RedisServerBuilder {
         val builder = RedisServer.newRedisServer()
-            .bind(group.binds.next())
-            .port(group.ports.next())
+            .bind(nodeBinds.next())
+            .port(nodePorts.next())
             .slaveOf(mainNode.bind, mainNode.port)
         if (config.executeInDirectory.isNotEmpty()) {
             builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
@@ -107,12 +105,12 @@ internal class RedisClusterContextCustomizer(
         return builder
     }
 
-    private fun ports(group: ReplicationGroup): List<Int> {
-        return if (group.ports.isEmpty()) {
-            val nOfNodes = group.replicas + 1
+    private fun ports(): List<Int> {
+        return if (config.ports.isEmpty()) {
+            val nOfNodes = config.replicas + 1
             IntStream.range(0, nOfNodes).map { _ -> portProvider.next() }.toList()
         } else {
-            group.ports.map { if (it == 0) unspecifiedUnusedPort() else it }.toList()
+            config.ports.map { if (it == 0) unspecifiedUnusedPort() else it }.toList()
         }
     }
 
@@ -124,60 +122,57 @@ internal class RedisClusterContextCustomizer(
         return port
     }
 
-    private fun binds(group: ReplicationGroup): List<String> {
-        return if (group.binds.isEmpty()) {
-            val nOfNodes = group.replicas + 1
+    private fun binds(): List<String> {
+        return if (config.binds.isEmpty()) {
+            val nOfNodes = config.replicas + 1
             IntStream.range(0, nOfNodes).mapToObj { _ -> DEFAULT_BIND }.toList()
         } else {
-            group.binds.map { it.ifEmpty { DEFAULT_BIND } }.toList()
+            config.binds.map { it.ifEmpty { DEFAULT_BIND } }.toList()
         }
     }
 
     private fun createSentinel(
         sentinelConfig: EmbeddedRedisCluster.Sentinel,
-        replicationGroups: Map<String, Triple<String, Node, List<RedisServer>>>
+        replicationGroup: Pair<Node, List<RedisServer>>
     ): RedisSentinel {
+        val mainNode = replicationGroup.first
         val builder = RedisSentinel.newRedisSentinel()
             .bind(sentinelConfig.bind.ifEmpty { DEFAULT_BIND })
-            .port(if (sentinelConfig.port == 0) portProvider.next() else sentinelConfig.port)
-        val monitoredGroups = if (sentinelConfig.monitoredGroups.isEmpty()) {
-            replicationGroups.keys
-        } else {
-            sentinelConfig.monitoredGroups.toSet()
-        }
-        monitoredGroups.forEach { name ->
-            val (_, mainNode, _) = replicationGroups[name]
-                ?: throw IllegalStateException("No such replication group: $name")
-            builder
-                .setting("sentinel monitor $name ${mainNode.bind} ${mainNode.port} $QUORUM_SIZE")
-                .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
-                .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
-                .setting("sentinel parallel-syncs $name ${sentinelConfig.parallelSyncs}")
-        }
+            .port(if (sentinelConfig.port == 0) portProvider.next(true) else sentinelConfig.port)
+            .setting("sentinel monitor $name ${mainNode.bind} ${mainNode.port} $QUORUM_SIZE")
+            .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
+            .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
+            .setting("sentinel parallel-syncs $name ${sentinelConfig.parallelSyncs}")
         if (config.executeInDirectory.isNotEmpty()) {
             builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
         }
+        customizer.forEach { c -> c.customizeSentinels(builder, config, sentinelConfig) }
         return builder.build()
     }
 
-    private fun parseAddresses(cluster: RedisCluster): List<Pair<String, Int>> =
-        cluster.servers()
+    private fun parseSentinelAddresses(cluster: RedisCluster): List<Pair<String, Int>> =
+        cluster.sentinels()
             .map { parseBindAddress(it) to it.ports().first() }
             .toList()
 
-    private fun createClient(addresses: List<Pair<String, Int>>): JedisCluster {
-        return JedisCluster(addresses.map { HostAndPort(it.first, it.second) }.toSet())
+    private fun createClient(sentinelAddresses: List<Pair<String, Int>>): RedisClient {
+        val jedisSentinelPool = JedisSentinelPool(name, sentinelAddresses.map { it.first + ':' + it.second }.toSet())
+        return JedisHighAvailabilityClient(jedisSentinelPool)
     }
 
-    private fun setSpringProperties(context: ConfigurableApplicationContext, addresses: List<Pair<String, Int>>) {
+    private fun setSpringProperties(
+        context: ConfigurableApplicationContext,
+        sentinelAddresses: List<Pair<String, Int>>
+    ) {
         TestPropertyValues.of(
             mapOf(
-                "spring.data.redis.cluster.nodes" to addresses.joinToString(",") { "${it.first}:${it.second}" }
+                "spring.data.redis.sentinel.master" to name,
+                "spring.data.redis.sentinel.nodes" to sentinelAddresses.joinToString(",") { "${it.first}:${it.second}" }
             )
         ).applyTo(context.environment)
     }
 
-    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: UnifiedJedis) {
+    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 client.close()
@@ -198,13 +193,6 @@ internal class RedisClusterContextCustomizer(
     override fun hashCode(): Int {
         return config.hashCode()
     }
-
-    internal data class Group(
-        val name: String,
-        val ports: Iterator<Int>,
-        val binds: Iterator<String>,
-        val config: ReplicationGroup
-    )
 
     internal data class Node(val node: RedisServer, val port: Int, val bind: String) {
         constructor(node: RedisServer) : this(

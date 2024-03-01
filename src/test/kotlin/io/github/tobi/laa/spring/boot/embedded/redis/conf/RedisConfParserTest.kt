@@ -180,6 +180,7 @@ internal class RedisConfParserTest {
                             RedisConf.Directive("tls-protocols", "TLSv1.2 TLSv1.3"),
                             RedisConf.Directive("logfile", ""),
                             RedisConf.Directive("proc-title-template", "{title} {listen-addr} {server-mode}"),
+                            RedisConf.Directive("sentinel", "monitor", "Blue-lored Antbird", "::1", "6379", "1"),
                             RedisConf.Directive("double-quote", "\""),
                             RedisConf.Directive("single-quote", "'"),
                         )

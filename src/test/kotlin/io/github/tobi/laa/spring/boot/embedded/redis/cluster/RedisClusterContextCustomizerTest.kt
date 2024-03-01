@@ -1,8 +1,9 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
+import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -12,14 +13,13 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
-import redis.clients.jedis.UnifiedJedis
 import redis.embedded.Redis
 
 @DisplayName("Tests for RedisShardedClusterContextCustomizer")
 @ExtendWith(MockKExtension::class)
 internal class RedisClusterContextCustomizerTest {
 
-    @MockK
+    @RelaxedMockK
     private lateinit var portProvider: PortProvider
 
     private val config = EmbeddedRedisCluster()
@@ -57,7 +57,7 @@ internal class RedisClusterContextCustomizerTest {
     @DisplayName("Closing ApplicationContext should stop Redis server and Redis client")
     fun closingApplicationContext_shouldStopRedisServerAndRedisClient() {
         var server: Redis?
-        var client: UnifiedJedis?
+        var client: RedisClient?
         AnnotationConfigApplicationContext().use {
             RedisClusterContextCustomizerFactory()
                 .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())

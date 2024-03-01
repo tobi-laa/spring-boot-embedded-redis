@@ -108,8 +108,10 @@ internal open class RedisTests(
         }
     }
 
-    inner class RedisPropertiesAssertion :
-        ObjectAssert<RedisProperties>(props) {
+    inner class RedisPropertiesAssertion : ObjectAssert<RedisProperties>(props) {
+
+        var sentinel: Boolean = false
+        var cluster: Boolean = false
 
         fun and(): RedisPropertiesAssertion {
             return this
@@ -131,6 +133,13 @@ internal open class RedisTests(
 
         fun shouldBeCluster(): RedisPropertiesAssertion {
             assertThat(props.cluster).isNotNull()
+            cluster = true
+            return this
+        }
+
+        fun shouldBeSentinel(): RedisPropertiesAssertion {
+            assertThat(props.sentinel).isNotNull()
+            sentinel = true
             return this
         }
 
@@ -140,7 +149,12 @@ internal open class RedisTests(
         }
 
         fun shouldHaveNode(host: String, port: Int): RedisPropertiesAssertion {
-            assertThat(props.cluster.nodes).contains("$host:$port")
+            if (cluster) {
+                assertThat(props.cluster.nodes).contains("$host:$port")
+            }
+            if (sentinel) {
+                assertThat(props.sentinel.nodes).contains("$host:$port")
+            }
             return this
         }
     }
@@ -156,6 +170,9 @@ internal open class RedisTests(
             val conf =
                 if (server is RedisShardedCluster) {
                     server.servers().map { RedisConfParser.parse(RedisConfLocator.locate(it)) }.toList()
+                } else if (server is RedisCluster) {
+                    (server.sentinels() + server.servers()).map { RedisConfParser.parse(RedisConfLocator.locate(it)) }
+                        .toList()
                 } else {
                     singletonList(RedisConfParser.parse(RedisConfLocator.locate(server)))
                 }
@@ -177,6 +194,21 @@ internal open class RedisTests(
             assertThat(cluster.sentinels()).isNotNull()
             return RedisSentinelAssertion(cluster.sentinels())
         }
+
+        fun shouldHaveNodes(): RedisNodeAssertion {
+            val server = context?.let { RedisStore.server(it) }!!
+            assertThat(server).satisfiesAnyOf(
+                { it is RedisCluster },
+                { it is RedisShardedCluster }
+            )
+            val nodes = when (server) {
+                is RedisCluster -> server.servers()
+                is RedisShardedCluster -> server.servers()
+                else -> emptyList()
+            }
+            assertThat(nodes).isNotEmpty
+            return RedisNodeAssertion(nodes)
+        }
     }
 
     inner class RedisConfAssertion(val conf: List<RedisConf>) {
@@ -187,6 +219,15 @@ internal open class RedisTests(
 
         fun andAlso(): RedisTests {
             return this@RedisTests
+        }
+
+        fun thatDoesNotContainDirective(keyword: String, vararg arguments: String): RedisConfAssertion {
+            return thatDoesNotContainDirective(RedisConf.Directive(keyword, *arguments))
+        }
+
+        fun thatDoesNotContainDirective(directive: RedisConf.Directive): RedisConfAssertion {
+            assertThat(conf.flatMap { it.directives }.toList()).doesNotContain(directive)
+            return this
         }
 
         fun thatContainsDirective(keyword: String, vararg arguments: String): RedisConfAssertion {
@@ -256,6 +297,38 @@ internal open class RedisTests(
         fun thatHasParallelSyncs(group: String, parallelSyncs: Int): RedisSentinelAssertion {
             RedisConfAssertion(sentinelsAndConf.map { it.second })
                 .thatContainsDirective("sentinel", "parallel-syncs", group, parallelSyncs.toString())
+            return this
+        }
+    }
+
+    inner class RedisNodeAssertion(private val nodes: List<redis.embedded.Redis>) {
+
+        val nodesAndConf = nodes.map { it to RedisConfParser.parse(RedisConfLocator.locate(it)) }
+
+        fun and(): RedisNodeAssertion {
+            return this
+        }
+
+        fun andAlso(): RedisTests {
+            return this@RedisTests
+        }
+
+        fun withOne(): RedisNodeAssertion {
+            return this
+        }
+
+        fun withAtLeastOne(): RedisNodeAssertion {
+            return this
+        }
+
+        fun thatHaveASizeOf(size: Int): RedisNodeAssertion {
+            assertThat(nodes).hasSize(size)
+            return this
+        }
+
+        fun thatRunsOn(bind: String, port: Int): RedisNodeAssertion {
+            RedisConfAssertion(nodesAndConf.filter { it.first.ports().contains(port) }.map { it.second })
+                .thatContainsDirective("bind", bind)
             return this
         }
     }

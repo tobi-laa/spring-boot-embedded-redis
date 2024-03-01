@@ -15,14 +15,47 @@ import kotlin.reflect.KClass
 annotation class EmbeddedRedisCluster(
 
     /**
-     * The replication groups of the Redis cluster. Must contain at least one group.
-     *
-     * @see redis.embedded.core.RedisClusterBuilder.replicationGroup
+     * The name of the replication group. If nothing is set, the group will be given the common english name of a
+     * random bird.
      */
-    val replicationGroups: Array<ReplicationGroup> = [ReplicationGroup()],
+    val name: String = "",
 
     /**
-     * The sentinels of the Redis cluster. May be empty, in which case no sentinels will be started.
+     * The number of (non-main) replicas. Must be greater than 0.
+     */
+    val replicas: Int = 2,
+
+    /**
+     * The ports to start the nodes on. Can be left empty, in which case free ports upwards from `6379` will be
+     * automatically used. Ports with the value `0` will be replaced with free ports.
+     *
+     * The first port will be used for the main node, the rest for the replicas.
+     *
+     * > **Warning**
+     * If specified, the number of ports must be equal to the number of nodes, that is, [replicas] + 1.
+     *
+     * > **Warning**
+     * If specified, none of the ports may be specified for a sentinel.
+     *
+     * @see redis.embedded.core.RedisServerBuilder.port
+     */
+    val ports: IntArray = [],
+
+    /**
+     * The bind addresses to use. If set, the nodes will only bind to the given addresses. Can be left empty, in which
+     * case the nodes will bind to `localhost`.
+     *
+     * The first address will be used for the main node, the rest for the replicas.
+     *
+     * > **Warning**
+     * If specified, the number of addresses must be equal to the number of nodes, that is, [replicas] + 1.
+     *
+     * @see redis.embedded.core.RedisServerBuilder.bind
+     */
+    val binds: Array<String> = [],
+
+    /**
+     * The sentinels used to monitor the nodes. Must contain at least one sentinel.
      *
      * @see redis.embedded.RedisCluster.sentinels
      */
@@ -48,73 +81,15 @@ annotation class EmbeddedRedisCluster(
 ) {
 
     /**
-     * A single replication group of the Redis cluster.
-     */
-    annotation class ReplicationGroup(
-
-        /**
-         * The name of the replication group. If nothing is set, the shard will be given the common english name of a
-         * random bird.
-         */
-        val name: String = "",
-
-        /**
-         * The number of replicas for this replication group. Must be greater than 0.
-         */
-        val replicas: Int = 2,
-
-        /**
-         * The ports to start the nodes of this replication group on. Can be left empty, in which case free ports
-         * upwards from `6379` will be automatically used. Ports with the value `0` will be replaced with free ports.
-         *
-         * The first port will be used for the main node, the rest for the replicas.
-         *
-         * > **Warning**
-         * If specified, the number of ports must be equal to the number of nodes of this replication group, that is,
-         * [replicas] + 1.
-         *
-         * > **Warning**
-         * If specified, none of the ports may be specified for another replication group or a sentinel.
-         *
-         * @see redis.embedded.core.RedisServerBuilder.port
-         */
-        val ports: IntArray = [],
-
-        /**
-         * The bind addresses to use. If set, the nodes will only bind to the given addresses. Can be left empty, in
-         * which case the nodes will bind to `localhost`.
-         *
-         * The first address will be used for the main node, the rest for the replicas.
-         *
-         * > **Warning**
-         * If specified, the number of addresses must be equal to the number of nodes of this replication group, that
-         * is, [replicas] + 1.
-         *
-         * @see redis.embedded.core.RedisServerBuilder.bind
-         */
-        val binds: Array<String> = []
-    )
-
-    /**
-     * A single sentinel of the Redis cluster.
+     * A single sentinel.
      */
     annotation class Sentinel(
-
-        /**
-         * The names of the replication groups to monitor. If not set, all replication groups will be monitored.
-         *
-         * > **Warning**
-         * If specified, all names must be the name of a replication group.
-         *
-         * @see ReplicationGroup.name
-         */
-        val monitoredGroups: Array<String> = [],
 
         /**
          * The port to start the embedded Redis sentinel on. If set to 0, a free port upwards from `26379` will be used.
          *
          * > **Warning**
-         * If specified, the same port must not be specified for another sentinel or a replication group.
+         * If specified, the same port must not be specified for another sentinel or a node.
          *
          * @see redis.embedded.RedisSentinel.port
          */

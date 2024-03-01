@@ -3,7 +3,6 @@ package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.CustomCustomizerTest.*
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.ReplicationGroup
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -12,18 +11,16 @@ import redis.embedded.core.RedisSentinelBuilder
 import redis.embedded.core.RedisServerBuilder
 
 private const val CAPPED_HERON_MAIN_PORT = 10000
-private const val ZIGZAG_HERON_SENTINEL_PORT = 30000
+private const val SENTINEL_PORT = 30000
 
 @IntegrationTest
 @EmbeddedRedisCluster(
-    replicationGroups = [
-        ReplicationGroup(name = "Capped Heron"),
-        ReplicationGroup(name = "Zigzag Heron"),
-        ReplicationGroup(name = "Bare-throated Tiger Heron")],
-    sentinels = [Sentinel(monitoredGroups = ["Zigzag Heron"])],
+    name = "Capped Heron",
+    sentinels = [Sentinel()],
     customizer = [
         SetsPortOfMainNodeForCappedHeron::class,
-        SetsPortOfSentinelMonitoringZigzagHeron::class,
+        SetsPortOfSentinel::class,
+        // this customizer will have no effect as it is not applied to "Capped Heron"
         SetsProtectedModeForReplicasOfBareThroatedTigerHeron::class]
 )
 @DisplayName("Using @EmbeddedRedisCluster with several customizers")
@@ -38,8 +35,8 @@ internal open class CustomCustomizerTest {
         given.nothing()
             .whenDoingNothing()
             .then().redisProperties()
-            .shouldBeCluster()
-            .and().shouldHaveNode("127.0.0.1", CAPPED_HERON_MAIN_PORT)
+            .shouldBeSentinel()
+            .and().shouldHaveNode("localhost", SENTINEL_PORT)
     }
 
     @Test
@@ -56,21 +53,21 @@ internal open class CustomCustomizerTest {
         given.nothing()
             .whenDoingNothing()
             .then().embeddedRedis()
-            .shouldHaveConfig().thatContainsDirective("protected-mode", "yes")
+            .shouldHaveConfig().thatDoesNotContainDirective("protected-mode", "yes")
             .andAlso().embeddedRedis()
-            .shouldHaveSentinels()
-            .thatHaveASizeOf(1)
-            .withOne().thatRunsOn("localhost", ZIGZAG_HERON_SENTINEL_PORT)
+            .shouldHaveNodes()
+            .thatHaveASizeOf(3)
+            .withOne().thatRunsOn("::1", CAPPED_HERON_MAIN_PORT)
     }
 
     internal class SetsPortOfMainNodeForCappedHeron : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster, group: String) {
-            if (group == "Capped Heron") {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
+            if (config.name == "Capped Heron") {
                 builder.port(CAPPED_HERON_MAIN_PORT)
             }
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster, group: String) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
             // no-op
         }
 
@@ -83,12 +80,12 @@ internal open class CustomCustomizerTest {
         }
     }
 
-    internal class SetsPortOfSentinelMonitoringZigzagHeron : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster, group: String) {
+    internal class SetsPortOfSentinel : RedisClusterCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster, group: String) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
             // no-op
         }
 
@@ -97,19 +94,17 @@ internal open class CustomCustomizerTest {
             config: EmbeddedRedisCluster,
             sentinelConfig: Sentinel
         ) {
-            if (sentinelConfig.monitoredGroups.contains("Zigzag Heron")) {
-                builder.port(ZIGZAG_HERON_SENTINEL_PORT)
-            }
+            builder.port(SENTINEL_PORT)
         }
     }
 
     internal class SetsProtectedModeForReplicasOfBareThroatedTigerHeron : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster, group: String) {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster, group: String) {
-            if (group == "Bare-throated Tiger Heron") {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
+            if (config.name == "Bare-throated Tiger Heron") {
                 builder.forEach { it.setting("protected-mode yes") }
             }
         }
