@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -25,8 +25,8 @@ import kotlin.streams.toList
 
 private const val CLUSTER_IP = "127.0.0.1"
 
-internal class RedisShardedClusterContextCustomizer(
-    private val config: EmbeddedRedisShardedCluster,
+internal class RedisClusterContextCustomizer(
+    private val config: EmbeddedRedisCluster,
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
@@ -78,7 +78,7 @@ internal class RedisShardedClusterContextCustomizer(
     }
 
     private fun createShard(
-        shard: EmbeddedRedisShardedCluster.Shard,
+        shard: EmbeddedRedisCluster.Shard,
         ports: Iterator<Int>
     ): Pair<RedisServer, List<RedisServer>> {
         val name = shard.name.ifEmpty { BirdNameProvider.next() }
@@ -137,7 +137,7 @@ internal class RedisShardedClusterContextCustomizer(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RedisShardedClusterContextCustomizer
+        other as RedisClusterContextCustomizer
 
         return config == other.config
     }

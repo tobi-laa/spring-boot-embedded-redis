@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.EmbeddedRedisTest
 import org.springframework.test.context.ContextCustomizerFactories
@@ -11,8 +11,8 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 @EmbeddedRedisTest
-@ContextCustomizerFactories(RedisShardedClusterContextCustomizerFactory::class)
-annotation class EmbeddedRedisShardedCluster( // FIXME rename to EmbeddedRedisCluster
+@ContextCustomizerFactories(RedisClusterContextCustomizerFactory::class)
+annotation class EmbeddedRedisCluster(
 
     /**
      * The shards of the Redis cluster. Must contain at least one shard.

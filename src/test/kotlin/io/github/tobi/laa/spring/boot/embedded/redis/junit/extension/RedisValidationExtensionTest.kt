@@ -1,11 +1,11 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Shard
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisShardCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability.Sentinel
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.RedisHighAvailabilityCustomizer
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster.Shard
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.RedisShardCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneCustomizer
 import org.assertj.core.api.ListAssert
@@ -44,7 +44,7 @@ internal class RedisValidationExtensionTest {
             .haveAtLeastOne(
                 event(
                     finishedWithFailure(
-                        message("Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisShardedCluster is allowed")
+                        message("Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisCluster is allowed")
                     )
                 )
             )
@@ -96,8 +96,8 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisShardedCluster with no shards should fail")
-    fun embeddedRedisShardedCluster_noShards_executingTests_shouldFail() {
+    @DisplayName("@EmbeddedRedisCluster with no shards should fail")
+    fun cluster_noShards_executingTests_shouldFail() {
         givenTestClass(NoShards::class.java)
         whenExecutingTests()
         thenEvents()
@@ -110,9 +110,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with {0} should fail")
-    @ArgumentsSource(ShardedClusterWithInvalidNOfReplicasProvider::class)
-    fun embeddedRedisShardedCluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidNOfReplicasProvider::class)
+    fun cluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -125,9 +125,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with {0} should fail")
-    @ArgumentsSource(ShardedClusterWithInvalidNOfPortsProvider::class)
-    fun embeddedRedisShardedCluster_invalidNOfPort_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidNOfPortsProvider::class)
+    fun cluster_invalidNOfPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -140,9 +140,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with ports {0} should fail")
-    @ArgumentsSource(ShardedClusterWithInvalidPortsProvider::class)
-    fun embeddedRedisShardedCluster_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with ports {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidPortsProvider::class)
+    fun cluster_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -156,9 +156,9 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisShardedCluster with duplicate ports should fail")
-    fun embeddedRedisShardedCluster_portsSpecifiedMoreThanOnce_executingTests_shouldFail() {
-        givenTestClass(ShardedClusterWithDuplicatePorts::class.java)
+    @DisplayName("@EmbeddedRedisCluster with duplicate ports should fail")
+    fun cluster_portsSpecifiedMoreThanOnce_executingTests_shouldFail() {
+        givenTestClass(ClusterWithDuplicatePorts::class.java)
         whenExecutingTests()
         thenEvents()
             .haveAtLeastOne(
@@ -170,9 +170,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisShardedCluster with initialization timeout {0} should fail")
-    @ArgumentsSource(ShardedClusterWithInvalidInitTimeoutProvider::class)
-    fun embeddedRedisShardedCluster_invalidInitTimeout_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisCluster with initialization timeout {0} should fail")
+    @ArgumentsSource(ClusterWithInvalidInitTimeoutProvider::class)
+    fun cluster_invalidInitTimeout_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -186,9 +186,9 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisShardedCluster with customizer that does not have a no-args constructor should fail")
-    fun embeddedRedisShardedCluster_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
-        givenTestClass(ShardedClusterWithCustomizerWithoutNoArgsConstructor::class.java)
+    @DisplayName("@EmbeddedRedisCluster with customizer that does not have a no-args constructor should fail")
+    fun cluster_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
+        givenTestClass(ClusterWithCustomizerWithoutNoArgsConstructor::class.java)
         whenExecutingTests()
         thenEvents()
             .haveAtLeastOne(
@@ -317,14 +317,14 @@ internal class RedisValidationExtensionTest {
                 ),
                 arguments(
                     named(
-                        "@EmbeddedRedis and @EmbeddedRedisShardedCluster",
-                        StandaloneAndShardedCluster::class.java
+                        "@EmbeddedRedis and @EmbeddedRedisCluster",
+                        StandaloneAndCluster::class.java
                     )
                 ),
                 arguments(
                     named(
-                        "@EmbeddedRedisHighAvailability and @EmbeddedRedisShardedCluster",
-                        HighAvailAndShardedCluster::class.java
+                        "@EmbeddedRedisHighAvailability and @EmbeddedRedisCluster",
+                        HighAvailAndCluster::class.java
                     )
                 ),
                 arguments(named("@EmbeddedRedis twice", StandaloneTwice::class.java)),
@@ -333,7 +333,7 @@ internal class RedisValidationExtensionTest {
 
         @EmbeddedRedisStandalone
         @EmbeddedRedisHighAvailability
-        @EmbeddedRedisShardedCluster
+        @EmbeddedRedisCluster
         internal class AllThreeAnnotations : WithDummyTest()
 
         @EmbeddedRedisStandalone
@@ -341,12 +341,12 @@ internal class RedisValidationExtensionTest {
         internal class StandaloneAndHighAvail : WithDummyTest()
 
         @EmbeddedRedisStandalone
-        @EmbeddedRedisShardedCluster
-        internal class StandaloneAndShardedCluster : WithDummyTest()
+        @EmbeddedRedisCluster
+        internal class StandaloneAndCluster : WithDummyTest()
 
         @EmbeddedRedisHighAvailability
-        @EmbeddedRedisShardedCluster
-        internal class HighAvailAndShardedCluster : WithDummyTest()
+        @EmbeddedRedisCluster
+        internal class HighAvailAndCluster : WithDummyTest()
 
         @EmbeddedRedisStandalone
         @SneakyBastard
@@ -390,10 +390,10 @@ internal class RedisValidationExtensionTest {
         }
     }
 
-    @EmbeddedRedisShardedCluster(shards = [])
+    @EmbeddedRedisCluster(shards = [])
     internal class NoShards : WithDummyTest()
 
-    internal class ShardedClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
+    internal class ClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -402,14 +402,14 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisShardedCluster(shards = [Shard(replicas = -1)])
+        @EmbeddedRedisCluster(shards = [Shard(replicas = -1)])
         internal class NegativeReplicas : WithDummyTest()
 
-        @EmbeddedRedisShardedCluster(shards = [Shard(replicas = 0)])
+        @EmbeddedRedisCluster(shards = [Shard(replicas = 0)])
         internal class ZeroReplicas : WithDummyTest()
     }
 
-    internal class ShardedClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
+    internal class ClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -428,14 +428,14 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisShardedCluster(ports = [1, 2])
+        @EmbeddedRedisCluster(ports = [1, 2])
         internal class ThreeNodesButTwoPorts : WithDummyTest()
 
-        @EmbeddedRedisShardedCluster(shards = [Shard(replicas = 1), Shard(replicas = 1)], ports = [1, 2, 3])
+        @EmbeddedRedisCluster(shards = [Shard(replicas = 1), Shard(replicas = 1)], ports = [1, 2, 3])
         internal class FourNodesButThreePorts : WithDummyTest()
     }
 
-    internal class ShardedClusterWithInvalidPortsProvider : ArgumentsProvider {
+    internal class ClusterWithInvalidPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -444,17 +444,17 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisShardedCluster(ports = [-1, 1, 2])
+        @EmbeddedRedisCluster(ports = [-1, 1, 2])
         internal class NegativePort : WithDummyTest()
 
-        @EmbeddedRedisShardedCluster(ports = [65534, 65535, 65536])
+        @EmbeddedRedisCluster(ports = [65534, 65535, 65536])
         internal class Port65536 : WithDummyTest()
     }
 
-    @EmbeddedRedisShardedCluster(ports = [1, 2, 2])
-    internal class ShardedClusterWithDuplicatePorts : WithDummyTest()
+    @EmbeddedRedisCluster(ports = [1, 2, 2])
+    internal class ClusterWithDuplicatePorts : WithDummyTest()
 
-    internal class ShardedClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
+    internal class ClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -463,21 +463,21 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisShardedCluster(initializationTimeout = 0)
+        @EmbeddedRedisCluster(initializationTimeout = 0)
         internal class Zero : WithDummyTest()
 
-        @EmbeddedRedisShardedCluster(initializationTimeout = -1)
+        @EmbeddedRedisCluster(initializationTimeout = -1)
         internal class Negative : WithDummyTest()
     }
 
-    @EmbeddedRedisShardedCluster(customizer = [ShardedClusterCustomizerWithoutNoArgsConstructor::class])
-    internal class ShardedClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
+    @EmbeddedRedisCluster(customizer = [ClusterCustomizerWithoutNoArgsConstructor::class])
+    internal class ClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
-    internal class ShardedClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisShardCustomizer {
+    internal class ClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisShardCustomizer {
 
         override fun customizeMainNode(
             builder: RedisServerBuilder,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             // no-op
@@ -485,7 +485,7 @@ internal class RedisValidationExtensionTest {
 
         override fun customizeReplicas(
             builder: List<RedisServerBuilder>,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             // no-op

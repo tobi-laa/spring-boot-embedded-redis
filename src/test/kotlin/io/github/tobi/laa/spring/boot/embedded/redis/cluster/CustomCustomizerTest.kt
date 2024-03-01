@@ -1,9 +1,10 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.CustomCustomizerTest.SetsPortOfMainNodeForCappedHeron
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.CustomCustomizerTest.SetsProtectedModeForReplicasOfBareThroatedTigerHeron
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.CustomCustomizerTest.SetsPortOfMainNodeForCappedHeron
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.CustomCustomizerTest.SetsProtectedModeForReplicasOfBareThroatedTigerHeron
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Shard
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,16 +13,16 @@ import redis.embedded.core.RedisServerBuilder
 private const val CAPPED_HERON_MAIN_PORT = 10000
 
 @IntegrationTest
-@EmbeddedRedisShardedCluster(
+@EmbeddedRedisCluster(
     shards = [
-        EmbeddedRedisShardedCluster.Shard(name = "Capped Heron"),
-        EmbeddedRedisShardedCluster.Shard(name = "Zigzag Heron"),
-        EmbeddedRedisShardedCluster.Shard(name = "Bare-throated Tiger Heron")],
+        Shard(name = "Capped Heron"),
+        Shard(name = "Zigzag Heron"),
+        Shard(name = "Bare-throated Tiger Heron")],
     customizer = [
         SetsPortOfMainNodeForCappedHeron::class,
         SetsProtectedModeForReplicasOfBareThroatedTigerHeron::class]
 )
-@DisplayName("Using @EmbeddedRedisShardedCluster with several customizers")
+@DisplayName("Using @EmbeddedRedisCluster with several customizers")
 internal open class CustomCustomizerTest {
 
     @Autowired
@@ -57,7 +58,7 @@ internal open class CustomCustomizerTest {
     class SetsPortOfMainNodeForCappedHeron : RedisShardCustomizer {
         override fun customizeMainNode(
             builder: RedisServerBuilder,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             if (shard == "Capped Heron") {
@@ -67,7 +68,7 @@ internal open class CustomCustomizerTest {
 
         override fun customizeReplicas(
             builder: List<RedisServerBuilder>,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             // no-op
@@ -77,7 +78,7 @@ internal open class CustomCustomizerTest {
     class SetsProtectedModeForReplicasOfBareThroatedTigerHeron : RedisShardCustomizer {
         override fun customizeMainNode(
             builder: RedisServerBuilder,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             // no-op
@@ -85,7 +86,7 @@ internal open class CustomCustomizerTest {
 
         override fun customizeReplicas(
             builder: List<RedisServerBuilder>,
-            config: EmbeddedRedisShardedCluster,
+            config: EmbeddedRedisCluster,
             shard: String
         ) {
             if (shard == "Bare-throated Tiger Heron") {

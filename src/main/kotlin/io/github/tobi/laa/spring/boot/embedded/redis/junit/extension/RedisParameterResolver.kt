@@ -1,8 +1,8 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
@@ -22,8 +22,8 @@ internal class RedisParameterResolver : ParameterResolver {
         val type = parameterType(parameterContext)
         return redisResolvable(type)
                 || redisStandaloneResolvable(type, extensionContext)
+                || highAvailabilityResolvable(type, extensionContext)
                 || clusterResolvable(type, extensionContext)
-                || shardedClusterResolvable(type, extensionContext)
     }
 
     private fun parameterType(parameterContext: ParameterContext?): Class<*> {
@@ -39,14 +39,14 @@ internal class RedisParameterResolver : ParameterResolver {
                 && annotatedWith(extensionContext, EmbeddedRedisStandalone::class.java)
     }
 
-    private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun highAvailabilityResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
         return type.isAssignableFrom(RedisCluster::class.java)
                 && annotatedWith(extensionContext, EmbeddedRedisHighAvailability::class.java)
     }
 
-    private fun shardedClusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
         return type.isAssignableFrom(RedisShardedCluster::class.java)
-                && annotatedWith(extensionContext, EmbeddedRedisShardedCluster::class.java)
+                && annotatedWith(extensionContext, EmbeddedRedisCluster::class.java)
     }
 
     private fun annotatedWith(extensionContext: ExtensionContext?, annotationType: Class<out Annotation>): Boolean {

@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import redis.clients.jedis.JedisCluster

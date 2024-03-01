@@ -1,8 +1,8 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.findTestClassAnnotations
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -19,23 +19,23 @@ internal class RedisValidationExtension : BeforeAllCallback {
     override fun beforeAll(context: ExtensionContext?) {
         val embeddedRedisStandalone = annotation(context, EmbeddedRedisStandalone::class.java)
         val embeddedRedisHighAvailability = annotation(context, EmbeddedRedisHighAvailability::class.java)
-        val embeddedRedisShardedCluster = annotation(context, EmbeddedRedisShardedCluster::class.java)
+        val embeddedRedisCluster = annotation(context, EmbeddedRedisCluster::class.java)
         validateMutuallyExclusive(context)
         embeddedRedisStandalone?.let { validateStandalone(it) }
         embeddedRedisHighAvailability?.let { validateHighAvailability(it) }
-        embeddedRedisShardedCluster?.let { validateShardedCluster(it) }
+        embeddedRedisCluster?.let { validateCluster(it) }
     }
 
     private fun validateMutuallyExclusive(context: ExtensionContext?) {
         val count = Stream.of(
             annotations(context, EmbeddedRedisStandalone::class.java),
             annotations(context, EmbeddedRedisHighAvailability::class.java),
-            annotations(context, EmbeddedRedisShardedCluster::class.java)
+            annotations(context, EmbeddedRedisCluster::class.java)
         )
             .flatMap { it.stream() }
             .filter { it != null }
             .count()
-        require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisShardedCluster is allowed" }
+        require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisCluster is allowed" }
     }
 
     private fun validateStandalone(config: EmbeddedRedisStandalone) {
@@ -72,7 +72,7 @@ internal class RedisValidationExtension : BeforeAllCallback {
         require(allPorts.distinct().size == allPorts.size) { "Ports must not be specified more than once" }
     }
 
-    private fun validateShardedCluster(config: EmbeddedRedisShardedCluster) {
+    private fun validateCluster(config: EmbeddedRedisCluster) {
         require(config.shards.isNotEmpty()) { "Shards must not be empty" }
         require(config.shards.all { it.replicas > 0 }) { "Replicas for all shards must be greater than 0" }
         require(config.ports.isEmpty() || config.ports.size == config.shards.sumOf { it.replicas + 1 }) { "If ports are specified, they must match the number of nodes" }

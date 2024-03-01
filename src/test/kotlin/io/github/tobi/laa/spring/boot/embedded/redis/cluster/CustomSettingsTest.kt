@@ -1,22 +1,22 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster.Shard
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Shard
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration.ofSeconds
 
 @IntegrationTest
-@EmbeddedRedisShardedCluster(
+@EmbeddedRedisCluster(
     shards = [
         Shard(replicas = 1),
         Shard(replicas = 2),
         Shard(replicas = 3)],
     ports = [6380, 7000, 7001, 7002, 7003, 7004, 7005, 11111, 22222]
 )
-@DisplayName("Using @EmbeddedRedisShardedCluster with custom settings")
+@DisplayName("Using @EmbeddedRedisCluster with custom settings")
 internal class CustomSettingsTest {
 
     @Autowired

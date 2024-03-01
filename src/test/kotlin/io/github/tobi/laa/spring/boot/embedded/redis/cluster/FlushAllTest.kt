@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Nested
 @IntegrationTest
-@EmbeddedRedisShardedCluster
+@EmbeddedRedisCluster
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestClassOrder(ClassOrderer.OrderAnnotation::class)
 @DisplayName("Test @RedisFlushAll annotation for sharded Redis cluster")

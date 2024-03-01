@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster
+package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
 import redis.embedded.core.RedisServerBuilder
 
@@ -7,7 +7,7 @@ import redis.embedded.core.RedisServerBuilder
  *
  * Implementations _must_ have a no-arg constructor.
  *
- * @see EmbeddedRedisShardedCluster.customizer
+ * @see EmbeddedRedisCluster.customizer
  */
 interface RedisShardCustomizer {
 
@@ -20,7 +20,7 @@ interface RedisShardCustomizer {
      */
     fun customizeMainNode(
         builder: RedisServerBuilder,
-        config: EmbeddedRedisShardedCluster,
+        config: EmbeddedRedisCluster,
         shard: String
     )
 
@@ -33,7 +33,7 @@ interface RedisShardCustomizer {
      */
     fun customizeReplicas(
         builder: List<RedisServerBuilder>,
-        config: EmbeddedRedisShardedCluster,
+        config: EmbeddedRedisCluster,
         shard: String
     )
 }

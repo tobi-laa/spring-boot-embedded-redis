@@ -20,14 +20,14 @@ internal class ParamResolverTest {
     @Test
     @Order(1)
     @DisplayName("Should resolve @Test parameters correctly")
-    fun shouldResolveTestParamsCorrectly(redis: Redis, redisCluster: RedisCluster) {
+    fun shouldResolveTestParamsCorrectly(redis: Redis, redisHighAvailability: RedisCluster) {
         thenParamIsCorrectlyResolved(redis)
-        thenParamIsCorrectlyResolved(redisCluster)
+        thenParamIsCorrectlyResolved(redisHighAvailability)
     }
 
     @BeforeEach
-    fun beforeEach(redis: Redis, redisCluster: RedisCluster) {
-        paramsFromBeforeEach = listOf(redis, redisCluster)
+    fun beforeEach(redis: Redis, redisHighAvailability: RedisCluster) {
+        paramsFromBeforeEach = listOf(redis, redisHighAvailability)
     }
 
     @Test
@@ -45,8 +45,8 @@ internal class ParamResolverTest {
     }
 
     @AfterEach
-    fun afterEach(redis: Redis, redisCluster: RedisCluster) {
-        paramsFromAfterEach = listOf(redis, redisCluster)
+    fun afterEach(redis: Redis, redisHighAvailability: RedisCluster) {
+        paramsFromAfterEach = listOf(redis, redisHighAvailability)
     }
 
     @Test
@@ -70,16 +70,16 @@ internal class ParamResolverTest {
 
         @JvmStatic
         @BeforeAll
-        fun beforeAll(redis: Redis, redisCluster: RedisCluster) {
-            paramsFromBeforeAll = listOf(redis, redisCluster)
+        fun beforeAll(redis: Redis, redisHighAvailability: RedisCluster) {
+            paramsFromBeforeAll = listOf(redis, redisHighAvailability)
         }
 
         @JvmStatic
         @AfterAll
-        fun afterAll(redis: Redis, redisCluster: RedisCluster) {
+        fun afterAll(redis: Redis, redisHighAvailability: RedisCluster) {
             // no @Test methods will be executed after this method, so assertions are put here instead
             thenParamIsCorrectlyResolved(redis)
-            thenParamIsCorrectlyResolved(redisCluster)
+            thenParamIsCorrectlyResolved(redisHighAvailability)
         }
 
         private fun thenParamIsCorrectlyResolved(param: Any?) {
