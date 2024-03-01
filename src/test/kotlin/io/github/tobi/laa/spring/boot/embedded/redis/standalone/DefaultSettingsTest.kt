@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import redis.embedded.Redis
 
 @IntegrationTest
-@EmbeddedRedisServer
-@DisplayName("Using @EmbeddedRedisServer with default settings")
+@EmbeddedRedisStandalone
+@DisplayName("Using @EmbeddedRedisStandalone with default settings")
 internal open class DefaultSettingsTest {
 
     @Autowired

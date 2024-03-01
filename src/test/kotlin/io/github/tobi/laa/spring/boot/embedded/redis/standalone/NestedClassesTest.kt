@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-@EmbeddedRedisServer
-@DisplayName("Using @EmbeddedRedisServer on a top level class with nested classes should work fine")
+@EmbeddedRedisStandalone
+@DisplayName("Using @EmbeddedRedisStandalone on a top level class with nested classes should work fine")
 class NestedClassesTest {
 
     @Nested

@@ -2,7 +2,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.findTestClassAnnotations
-import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -17,28 +17,28 @@ internal class RedisValidationExtension : BeforeAllCallback {
     private val validPortRange = 0..65535
 
     override fun beforeAll(context: ExtensionContext?) {
-        val embeddedRedisServer = annotation(context, EmbeddedRedisServer::class.java)
+        val embeddedRedisStandalone = annotation(context, EmbeddedRedisStandalone::class.java)
         val embeddedRedisCluster = annotation(context, EmbeddedRedisCluster::class.java)
         val embeddedRedisShardedCluster = annotation(context, EmbeddedRedisShardedCluster::class.java)
         validateMutuallyExclusive(context)
-        embeddedRedisServer?.let { validateServer(it) }
+        embeddedRedisStandalone?.let { validateStandalone(it) }
         embeddedRedisCluster?.let { validateCluster(it) }
         embeddedRedisShardedCluster?.let { validateShardedCluster(it) }
     }
 
     private fun validateMutuallyExclusive(context: ExtensionContext?) {
         val count = Stream.of(
-            annotations(context, EmbeddedRedisServer::class.java),
+            annotations(context, EmbeddedRedisStandalone::class.java),
             annotations(context, EmbeddedRedisCluster::class.java),
             annotations(context, EmbeddedRedisShardedCluster::class.java)
         )
             .flatMap { it.stream() }
             .filter { it != null }
             .count()
-        require(count <= 1) { "Only one of @EmbeddedRedisServer, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed" }
+        require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed" }
     }
 
-    private fun validateServer(config: EmbeddedRedisServer) {
+    private fun validateStandalone(config: EmbeddedRedisStandalone) {
         require(config.port in validPortRange) { "Port must be in range $validPortRange" }
         require(config.configFile.isEmpty() || config.settings.isEmpty()) { "Either 'configFile' or 'settings' can be set, but not both" }
         validateCustomizers(config.customizer)

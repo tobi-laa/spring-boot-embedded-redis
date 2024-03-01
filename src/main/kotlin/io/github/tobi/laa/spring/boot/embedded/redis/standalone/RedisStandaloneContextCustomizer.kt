@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -19,8 +19,8 @@ import redis.embedded.core.ExecutableProvider.newJarResourceProvider
 import java.io.File
 import kotlin.reflect.full.createInstance
 
-internal class RedisServerContextCustomizer(
-    private val config: EmbeddedRedisServer,
+internal class RedisStandaloneContextCustomizer(
+    private val config: EmbeddedRedisStandalone,
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
@@ -89,7 +89,7 @@ internal class RedisServerContextCustomizer(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RedisServerContextCustomizer
+        other as RedisStandaloneContextCustomizer
 
         return config == other.config
     }

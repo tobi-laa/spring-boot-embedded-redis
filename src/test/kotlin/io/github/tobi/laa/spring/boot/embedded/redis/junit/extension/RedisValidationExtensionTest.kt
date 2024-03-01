@@ -3,8 +3,8 @@ package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisClusterCustomizer
-import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
-import io.github.tobi.laa.spring.boot.embedded.redis.server.RedisServerCustomizer
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster.Shard
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.RedisShardCustomizer
@@ -44,15 +44,15 @@ internal class RedisValidationExtensionTest {
             .haveAtLeastOne(
                 event(
                     finishedWithFailure(
-                        message("Only one of @EmbeddedRedisServer, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed")
+                        message("Only one of @EmbeddedRedisStandalone, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed")
                     )
                 )
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisServer with port {0} should fail")
-    @ArgumentsSource(ServerWithInvalidPortProvider::class)
-    fun embeddedRedis_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisStandalone with port {0} should fail")
+    @ArgumentsSource(StandaloneWithInvalidPortProvider::class)
+    fun standalone_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -66,8 +66,8 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisServer with both settings and configFile should fail")
-    fun embeddedRedis_settingsAndConfigFile_executingTests_shouldFail() {
+    @DisplayName("@EmbeddedRedisStandalone with both settings and configFile should fail")
+    fun standalone_settingsAndConfigFile_executingTests_shouldFail() {
         givenTestClass(SettingsAndConfigFile::class.java)
         whenExecutingTests()
         thenEvents()
@@ -81,9 +81,9 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisServer with customizer that does not have a no-args constructor should fail")
-    fun embeddedRedis_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
-        givenTestClass(ServerWithCustomizerWithoutNoArgsConstructor::class.java)
+    @DisplayName("@EmbeddedRedisStandalone with customizer that does not have a no-args constructor should fail")
+    fun standalone_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
+        givenTestClass(StandaloneWithCustomizerWithoutNoArgsConstructor::class.java)
         whenExecutingTests()
         thenEvents()
             .haveAtLeastOne(
@@ -326,16 +326,16 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisServer
+        @EmbeddedRedisStandalone
         @EmbeddedRedisCluster
         @EmbeddedRedisShardedCluster
         internal class AllThreeAnnotations : WithDummyTest()
 
-        @EmbeddedRedisServer
+        @EmbeddedRedisStandalone
         @EmbeddedRedisCluster
         internal class StandaloneAndCluster : WithDummyTest()
 
-        @EmbeddedRedisServer
+        @EmbeddedRedisStandalone
         @EmbeddedRedisShardedCluster
         internal class StandaloneAndShardedCluster : WithDummyTest()
 
@@ -343,17 +343,17 @@ internal class RedisValidationExtensionTest {
         @EmbeddedRedisShardedCluster
         internal class ClusterAndShardedCluster : WithDummyTest()
 
-        @EmbeddedRedisServer
+        @EmbeddedRedisStandalone
         @SneakyBastard
         internal class StandaloneTwice : WithDummyTest()
 
         @Target(AnnotationTarget.CLASS)
         @Retention(AnnotationRetention.RUNTIME)
-        @EmbeddedRedisServer
+        @EmbeddedRedisStandalone
         annotation class SneakyBastard
     }
 
-    internal class ServerWithInvalidPortProvider : ArgumentsProvider {
+    internal class StandaloneWithInvalidPortProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -363,24 +363,24 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisServer(port = -1)
+        @EmbeddedRedisStandalone(port = -1)
         internal class NegativePort : WithDummyTest()
 
-        @EmbeddedRedisServer(port = 65536)
+        @EmbeddedRedisStandalone(port = 65536)
         internal class Port65536 : WithDummyTest()
 
-        @EmbeddedRedisServer(port = 65537)
+        @EmbeddedRedisStandalone(port = 65537)
         internal class Port65537 : WithDummyTest()
     }
 
-    @EmbeddedRedisServer(settings = ["setting1", "setting2"], configFile = "configFile")
+    @EmbeddedRedisStandalone(settings = ["setting1", "setting2"], configFile = "configFile")
     internal class SettingsAndConfigFile : WithDummyTest()
 
-    @EmbeddedRedisServer(customizer = [CustomizerWithoutNoArgsConstructor::class])
-    internal class ServerWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
+    @EmbeddedRedisStandalone(customizer = [CustomizerWithoutNoArgsConstructor::class])
+    internal class StandaloneWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
-    internal class CustomizerWithoutNoArgsConstructor(val sth: String) : RedisServerCustomizer {
-        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+    internal class CustomizerWithoutNoArgsConstructor(val sth: String) : RedisStandaloneCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             // no-op
         }
     }

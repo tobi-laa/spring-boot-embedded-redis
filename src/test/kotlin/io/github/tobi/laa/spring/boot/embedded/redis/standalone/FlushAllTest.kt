@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Nested
 @IntegrationTest
-@EmbeddedRedisServer
+@EmbeddedRedisStandalone
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestClassOrder(ClassOrderer.OrderAnnotation::class)
 @DisplayName("Test @RedisFlushAll annotation for standalone Redis server")

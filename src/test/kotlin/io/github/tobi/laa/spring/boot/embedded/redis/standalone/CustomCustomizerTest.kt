@@ -1,8 +1,8 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.server.CustomCustomizerTest.*
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.CustomCustomizerTest.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,14 +11,14 @@ import redis.embedded.core.RedisServerBuilder
 private const val TEST_PORT = 10000
 
 @IntegrationTest
-@EmbeddedRedisServer(
+@EmbeddedRedisStandalone(
     customizer = [
         WillBeIgnored::class,
         SetsPortToTestPort::class,
         SetsBindToLoopbackIpv4::class,
         SetsProtectedMode::class]
 )
-@DisplayName("Using @EmbeddedRedisServer with several customizers")
+@DisplayName("Using @EmbeddedRedisStandalone with several customizers")
 internal open class CustomCustomizerTest {
 
     @Autowired
@@ -52,27 +52,27 @@ internal open class CustomCustomizerTest {
             .shouldHaveConfig().thatContainsDirective("protected-mode", "yes")
     }
 
-    class WillBeIgnored : RedisServerCustomizer {
-        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+    class WillBeIgnored : RedisStandaloneCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             builder.port(1)
             builder.bind("zombo.com")
         }
     }
 
-    class SetsPortToTestPort : RedisServerCustomizer {
-        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+    class SetsPortToTestPort : RedisStandaloneCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             builder.port(TEST_PORT)
         }
     }
 
-    class SetsBindToLoopbackIpv4 : RedisServerCustomizer {
-        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+    class SetsBindToLoopbackIpv4 : RedisStandaloneCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             builder.bind("127.0.0.1")
         }
     }
 
-    class SetsProtectedMode : RedisServerCustomizer {
-        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisServer) {
+    class SetsProtectedMode : RedisStandaloneCustomizer {
+        override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             builder.setting("protected-mode yes")
         }
     }

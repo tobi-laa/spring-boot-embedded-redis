@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -10,9 +10,9 @@ import redis.embedded.RedisInstance
 import redis.embedded.RedisServer
 
 @IntegrationTest
-@EmbeddedRedisServer
+@EmbeddedRedisStandalone
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@DisplayName("Parameter resolver test for @EmbeddedRedisServer")
+@DisplayName("Parameter resolver test for @EmbeddedRedisStandalone")
 internal class ParamResolverTest {
 
     var paramsFromBeforeEach = listOf<Redis>()

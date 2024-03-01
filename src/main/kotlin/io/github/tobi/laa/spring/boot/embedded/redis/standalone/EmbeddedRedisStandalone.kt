@@ -1,18 +1,19 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.EmbeddedRedisTest
 import org.springframework.test.context.ContextCustomizerFactories
 import kotlin.reflect.KClass
 
 /**
- * Annotation to enable a singular [embedded Redis server][redis.embedded.RedisServer] for tests.
+ * Annotation to enable a standalone [embedded Redis server][redis.embedded.RedisServer] for tests.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 @EmbeddedRedisTest
-@ContextCustomizerFactories(RedisServerContextCustomizerFactory::class)
-annotation class EmbeddedRedisServer(
+@ContextCustomizerFactories(RedisStandaloneContextCustomizerFactory::class)
+annotation class EmbeddedRedisStandalone(
+
     /**
      * The port to start the embedded Redis server on. If set to 0, a free port upwards from `6379` will be used.
      * @see redis.embedded.core.RedisServerBuilder.port
@@ -58,7 +59,7 @@ annotation class EmbeddedRedisServer(
     /**
      * Customizes how the Redis server is built. Customizers are ordered by their natural order in this array. Each
      * customizer must have no-arg constructor.
-     * @see RedisServerCustomizer
+     * @see RedisStandaloneCustomizer
      */
-    val customizer: Array<KClass<out RedisServerCustomizer>> = []
+    val customizer: Array<KClass<out RedisStandaloneCustomizer>> = []
 )

@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 @MustBeDocumented
 @EmbeddedRedisTest
 @ContextCustomizerFactories(RedisShardedClusterContextCustomizerFactory::class)
-annotation class EmbeddedRedisShardedCluster(
+annotation class EmbeddedRedisShardedCluster( // FIXME rename to EmbeddedRedisCluster
 
     /**
      * The shards of the Redis cluster. Must contain at least one shard.

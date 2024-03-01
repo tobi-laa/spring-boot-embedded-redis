@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
@@ -16,8 +16,8 @@ internal class SingletonTest {
 
     @Nested
     @SpringBootTest
-    @EmbeddedRedisServer
-    @DisplayName("Using @EmbeddedRedisServer with default settings for a class")
+    @EmbeddedRedisStandalone
+    @DisplayName("Using @EmbeddedRedisStandalone with default settings for a class")
     @Order(1)
     internal inner class First {
 
@@ -43,9 +43,9 @@ internal class SingletonTest {
 
     @Nested
     @SpringBootTest
-    @EmbeddedRedisServer
+    @EmbeddedRedisStandalone
     @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-    @DisplayName("Using @EmbeddedRedisServer with default settings for another class")
+    @DisplayName("Using @EmbeddedRedisStandalone with default settings for another class")
     @Order(2)
     internal inner class Second {
 

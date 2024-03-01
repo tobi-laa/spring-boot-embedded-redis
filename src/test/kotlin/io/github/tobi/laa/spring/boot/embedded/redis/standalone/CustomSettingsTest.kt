@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.server
+package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
@@ -6,25 +6,33 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
+private const val TEST_PORT = 10001
+private const val TEST_BIND = "::1"
 
 @IntegrationTest
-@EmbeddedRedisServer(
-    configFile = "src/test/resources/server/redis.conf"
+@EmbeddedRedisStandalone(
+    port = TEST_PORT,
+    bind = TEST_BIND,
+    settings = [
+        "appendonly no",
+        "protected-mode yes",
+        "appendfsync everysec"]
 )
-@DisplayName("Using @EmbeddedRedisServer with config file")
-internal class RedisConfFileTest {
+@DisplayName("Using @EmbeddedRedisStandalone with custom settings")
+internal class CustomSettingsTest {
 
     @Autowired
     private lateinit var given: RedisTests
 
     @Test
-    @DisplayName("RedisProperties should have the values as given in the redis.conf file")
-    fun redisPropertiesShouldHaveConfiguredValues() {
+    @DisplayName("RedisProperties should have the customized values")
+    fun redisPropertiesShouldHaveCustomizedValues() {
         given.nothing()
             .whenDoingNothing()
             .then().redisProperties()
             .shouldBeStandalone().and()
-            .shouldHaveHost("localhost")
+            .shouldHaveHost(TEST_BIND).and()
+            .shouldHavePort(TEST_PORT)
     }
 
     @Test
@@ -36,7 +44,7 @@ internal class RedisConfFileTest {
     }
 
     @Test
-    @DisplayName("Settings from redis.conf should have been applied to the embedded Redis server")
+    @DisplayName("Settings from @EmbeddedRedisStandalone should have been applied to the embedded Redis server")
     fun configFileShouldHaveBeenApplied() {
         given.nothing()
             .whenDoingNothing()

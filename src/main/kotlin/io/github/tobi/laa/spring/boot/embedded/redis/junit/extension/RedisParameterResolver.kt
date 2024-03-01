@@ -2,7 +2,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
-import io.github.tobi.laa.spring.boot.embedded.redis.server.EmbeddedRedisServer
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
@@ -21,7 +21,7 @@ internal class RedisParameterResolver : ParameterResolver {
     override fun supportsParameter(parameterContext: ParameterContext?, extensionContext: ExtensionContext?): Boolean {
         val type = parameterType(parameterContext)
         return redisResolvable(type)
-                || redisServerResolvable(type, extensionContext)
+                || redisStandaloneResolvable(type, extensionContext)
                 || clusterResolvable(type, extensionContext)
                 || shardedClusterResolvable(type, extensionContext)
     }
@@ -34,9 +34,9 @@ internal class RedisParameterResolver : ParameterResolver {
         return type == Redis::class.java
     }
 
-    private fun redisServerResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun redisStandaloneResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
         return type.isAssignableFrom(RedisServer::class.java)
-                && annotatedWith(extensionContext, EmbeddedRedisServer::class.java)
+                && annotatedWith(extensionContext, EmbeddedRedisStandalone::class.java)
     }
 
     private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {

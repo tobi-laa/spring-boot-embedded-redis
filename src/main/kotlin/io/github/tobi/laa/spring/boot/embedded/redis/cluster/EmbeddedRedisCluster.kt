@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 @MustBeDocumented
 @EmbeddedRedisTest
 @ContextCustomizerFactories(RedisClusterContextCustomizerFactory::class)
-annotation class EmbeddedRedisCluster(
+annotation class EmbeddedRedisCluster( // FIXME rename to EmbeddedRedisHighAvailability
 
     /**
      * The name of the replication group. If nothing is set, the group will be given the common english name of a
