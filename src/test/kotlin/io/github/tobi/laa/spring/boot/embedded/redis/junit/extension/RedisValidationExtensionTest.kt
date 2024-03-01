@@ -1,13 +1,13 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisClusterCustomizer
-import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
-import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneCustomizer
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability.Sentinel
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.RedisHighAvailabilityCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster.Shard
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.RedisShardCustomizer
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneCustomizer
 import org.assertj.core.api.ListAssert
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Named.named
@@ -44,7 +44,7 @@ internal class RedisValidationExtensionTest {
             .haveAtLeastOne(
                 event(
                     finishedWithFailure(
-                        message("Only one of @EmbeddedRedisStandalone, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed")
+                        message("Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisShardedCluster is allowed")
                     )
                 )
             )
@@ -201,8 +201,8 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisCluster with no sentinels should fail")
-    fun embeddedRedisCluster_noReplicationGroups_executingTests_shouldFail() {
+    @DisplayName("@EmbeddedRedisHighAvailability with no sentinels should fail")
+    fun highAvailability_noReplicationGroups_executingTests_shouldFail() {
         givenTestClass(NoSentinels::class.java)
         whenExecutingTests()
         thenEvents()
@@ -215,9 +215,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
-    @ArgumentsSource(ClusterWithInvalidNOfReplicasProvider::class)
-    fun embeddedRedisCluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidNOfReplicasProvider::class)
+    fun highAvailability_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -230,9 +230,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
-    @ArgumentsSource(ClusterWithInvalidNOfPortsProvider::class)
-    fun embeddedRedisCluster_invalidNOfPorts_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidNOfPortsProvider::class)
+    fun highAvailability_invalidNOfPorts_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -245,9 +245,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisCluster with ports {0} should fail")
-    @ArgumentsSource(ClusterWithInvalidPortsProvider::class)
-    fun embeddedRedisCluster_invalidPorts_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with ports {0} should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidPortsProvider::class)
+    fun highAvailability_invalidPorts_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -261,9 +261,9 @@ internal class RedisValidationExtensionTest {
     }
 
     @Test
-    @DisplayName("@EmbeddedRedisCluster with customizer that does not have a no-args constructor should fail")
-    fun embeddedRedisCluster_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
-        givenTestClass(ClusterWithCustomizerWithoutNoArgsConstructor::class.java)
+    @DisplayName("@EmbeddedRedisHighAvailability with customizer that does not have a no-args constructor should fail")
+    fun highAvailability_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
+        givenTestClass(HighAvailabilityWithCustomizerWithoutNoArgsConstructor::class.java)
         whenExecutingTests()
         thenEvents()
             .haveAtLeastOne(
@@ -275,9 +275,9 @@ internal class RedisValidationExtensionTest {
             )
     }
 
-    @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
-    @ArgumentsSource(ClusterWithDuplicatePortsProvider::class)
-    fun embeddedRedisCluster_portsSpecifiedMoreThanOnce_executingTests_shouldFail(clazz: Class<*>) {
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
+    @ArgumentsSource(HighAvailabilityWithDuplicatePortsProvider::class)
+    fun highAvailability_portsSpecifiedMoreThanOnce_executingTests_shouldFail(clazz: Class<*>) {
         givenTestClass(clazz)
         whenExecutingTests()
         thenEvents()
@@ -309,7 +309,12 @@ internal class RedisValidationExtensionTest {
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
                 arguments(named("all three annotations", AllThreeAnnotations::class.java)),
-                arguments(named("@EmbeddedRedis and @EmbeddedRedisCluster", StandaloneAndCluster::class.java)),
+                arguments(
+                    named(
+                        "@EmbeddedRedis and @EmbeddedRedisHighAvailability",
+                        StandaloneAndHighAvail::class.java
+                    )
+                ),
                 arguments(
                     named(
                         "@EmbeddedRedis and @EmbeddedRedisShardedCluster",
@@ -318,8 +323,8 @@ internal class RedisValidationExtensionTest {
                 ),
                 arguments(
                     named(
-                        "@EmbeddedRedisCluster and @EmbeddedRedisShardedCluster",
-                        ClusterAndShardedCluster::class.java
+                        "@EmbeddedRedisHighAvailability and @EmbeddedRedisShardedCluster",
+                        HighAvailAndShardedCluster::class.java
                     )
                 ),
                 arguments(named("@EmbeddedRedis twice", StandaloneTwice::class.java)),
@@ -327,21 +332,21 @@ internal class RedisValidationExtensionTest {
         }
 
         @EmbeddedRedisStandalone
-        @EmbeddedRedisCluster
+        @EmbeddedRedisHighAvailability
         @EmbeddedRedisShardedCluster
         internal class AllThreeAnnotations : WithDummyTest()
 
         @EmbeddedRedisStandalone
-        @EmbeddedRedisCluster
-        internal class StandaloneAndCluster : WithDummyTest()
+        @EmbeddedRedisHighAvailability
+        internal class StandaloneAndHighAvail : WithDummyTest()
 
         @EmbeddedRedisStandalone
         @EmbeddedRedisShardedCluster
         internal class StandaloneAndShardedCluster : WithDummyTest()
 
-        @EmbeddedRedisCluster
+        @EmbeddedRedisHighAvailability
         @EmbeddedRedisShardedCluster
-        internal class ClusterAndShardedCluster : WithDummyTest()
+        internal class HighAvailAndShardedCluster : WithDummyTest()
 
         @EmbeddedRedisStandalone
         @SneakyBastard
@@ -487,10 +492,10 @@ internal class RedisValidationExtensionTest {
         }
     }
 
-    @EmbeddedRedisCluster(sentinels = [])
+    @EmbeddedRedisHighAvailability(sentinels = [])
     internal class NoSentinels : WithDummyTest()
 
-    internal class ClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
+    internal class HighAvailabilityWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -499,14 +504,14 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(replicas = -1)
+        @EmbeddedRedisHighAvailability(replicas = -1)
         internal class NegativeReplicas : WithDummyTest()
 
-        @EmbeddedRedisCluster(replicas = 0)
+        @EmbeddedRedisHighAvailability(replicas = 0)
         internal class ZeroReplicas : WithDummyTest()
     }
 
-    internal class ClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
+    internal class HighAvailabilityWithInvalidNOfPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -525,14 +530,14 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(ports = [1, 2])
+        @EmbeddedRedisHighAvailability(ports = [1, 2])
         internal class ThreeNodesButTwoPorts : WithDummyTest()
 
-        @EmbeddedRedisCluster(replicas = 1, ports = [1, 2, 3])
+        @EmbeddedRedisHighAvailability(replicas = 1, ports = [1, 2, 3])
         internal class FourNodesButThreePorts : WithDummyTest()
     }
 
-    internal class ClusterWithInvalidPortsProvider : ArgumentsProvider {
+    internal class HighAvailabilityWithInvalidPortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -543,34 +548,35 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(ports = [-1, 1, 2])
+        @EmbeddedRedisHighAvailability(ports = [-1, 1, 2])
         internal class NegativePort : WithDummyTest()
 
-        @EmbeddedRedisCluster(sentinels = [Sentinel(port = -1)])
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(port = -1)])
         internal class NegativePortSentinel : WithDummyTest()
 
-        @EmbeddedRedisCluster(ports = [65534, 65535, 65536])
+        @EmbeddedRedisHighAvailability(ports = [65534, 65535, 65536])
         internal class Port65536 : WithDummyTest()
 
-        @EmbeddedRedisCluster(sentinels = [Sentinel(port = 65536)])
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(port = 65536)])
         internal class Port65536Sentinel : WithDummyTest()
     }
 
-    @EmbeddedRedisCluster(customizer = [ClusterCustomizerWithoutNoArgsConstructor::class])
-    internal class ClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
+    @EmbeddedRedisHighAvailability(customizer = [HighAvailabilityCustomizerWithoutNoArgsConstructor::class])
+    internal class HighAvailabilityWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
-    internal class ClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
+    internal class HighAvailabilityCustomizerWithoutNoArgsConstructor(val sth: String) :
+        RedisHighAvailabilityCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
         override fun customizeSentinels(
             builder: RedisSentinelBuilder,
-            config: EmbeddedRedisCluster,
+            config: EmbeddedRedisHighAvailability,
             sentinelConfig: Sentinel
         ) {
             // no-op
@@ -578,7 +584,7 @@ internal class RedisValidationExtensionTest {
 
     }
 
-    internal class ClusterWithDuplicatePortsProvider : ArgumentsProvider {
+    internal class HighAvailabilityWithDuplicatePortsProvider : ArgumentsProvider {
 
         override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
             return Stream.of(
@@ -592,10 +598,10 @@ internal class RedisValidationExtensionTest {
             )
         }
 
-        @EmbeddedRedisCluster(ports = [1, 2, 3], sentinels = [Sentinel(port = 1)])
+        @EmbeddedRedisHighAvailability(ports = [1, 2, 3], sentinels = [Sentinel(port = 1)])
         internal class DupPortsGroupAndSentinel : WithDummyTest()
 
-        @EmbeddedRedisCluster(sentinels = [Sentinel(port = 1), Sentinel(port = 1)])
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(port = 1), Sentinel(port = 1)])
         internal class DupPortsTwoSentinels : WithDummyTest()
     }
 

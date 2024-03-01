@@ -1,9 +1,9 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.findTestClassAnnotations
-import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import java.util.stream.Stream
@@ -18,24 +18,24 @@ internal class RedisValidationExtension : BeforeAllCallback {
 
     override fun beforeAll(context: ExtensionContext?) {
         val embeddedRedisStandalone = annotation(context, EmbeddedRedisStandalone::class.java)
-        val embeddedRedisCluster = annotation(context, EmbeddedRedisCluster::class.java)
+        val embeddedRedisHighAvailability = annotation(context, EmbeddedRedisHighAvailability::class.java)
         val embeddedRedisShardedCluster = annotation(context, EmbeddedRedisShardedCluster::class.java)
         validateMutuallyExclusive(context)
         embeddedRedisStandalone?.let { validateStandalone(it) }
-        embeddedRedisCluster?.let { validateCluster(it) }
+        embeddedRedisHighAvailability?.let { validateHighAvailability(it) }
         embeddedRedisShardedCluster?.let { validateShardedCluster(it) }
     }
 
     private fun validateMutuallyExclusive(context: ExtensionContext?) {
         val count = Stream.of(
             annotations(context, EmbeddedRedisStandalone::class.java),
-            annotations(context, EmbeddedRedisCluster::class.java),
+            annotations(context, EmbeddedRedisHighAvailability::class.java),
             annotations(context, EmbeddedRedisShardedCluster::class.java)
         )
             .flatMap { it.stream() }
             .filter { it != null }
             .count()
-        require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisCluster, @EmbeddedRedisShardedCluster is allowed" }
+        require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisShardedCluster is allowed" }
     }
 
     private fun validateStandalone(config: EmbeddedRedisStandalone) {
@@ -44,20 +44,20 @@ internal class RedisValidationExtension : BeforeAllCallback {
         validateCustomizers(config.customizer)
     }
 
-    private fun validateCluster(config: EmbeddedRedisCluster) {
+    private fun validateHighAvailability(config: EmbeddedRedisHighAvailability) {
         validateReplicationGroups(config)
         validateSentinels(config)
-        validateClusterPorts(config)
+        validatePorts(config)
         validateCustomizers(config.customizer)
     }
 
-    private fun validateReplicationGroups(config: EmbeddedRedisCluster) {
+    private fun validateReplicationGroups(config: EmbeddedRedisHighAvailability) {
         require(config.replicas > 0) { "Replicas must be greater than 0" }
         require(config.ports.isEmpty() || config.ports.size == config.replicas + 1) { "If ports are specified, they must match the number of nodes" }
         require(config.ports.all { it in validPortRange }) { "All ports must be in range $validPortRange" }
     }
 
-    private fun validateSentinels(config: EmbeddedRedisCluster) {
+    private fun validateSentinels(config: EmbeddedRedisHighAvailability) {
         require(config.sentinels.isNotEmpty()) { "Sentinels must not be empty" }
         config.sentinels.forEach { sentinel ->
             require(sentinel.port in validPortRange) { "All ports must be in range $validPortRange" }
@@ -67,7 +67,7 @@ internal class RedisValidationExtension : BeforeAllCallback {
         }
     }
 
-    private fun validateClusterPorts(config: EmbeddedRedisCluster) {
+    private fun validatePorts(config: EmbeddedRedisHighAvailability) {
         val allPorts = config.ports.filter { it != 0 } + config.sentinels.map { it.port }.filter { it != 0 }
         require(allPorts.distinct().size == allPorts.size) { "Ports must not be specified more than once" }
     }

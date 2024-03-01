@@ -1,18 +1,20 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.junit.extension.EmbeddedRedisTest
 import org.springframework.test.context.ContextCustomizerFactories
 import kotlin.reflect.KClass
 
 /**
- * Annotation to enable an [embedded Redis cluster][redis.embedded.RedisCluster] for tests.
+ * Annotation to enable embedded Redis in high availability mode with replicase and sentinels for tests.
+ *
+ * @see redis.embedded.RedisCluster
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 @EmbeddedRedisTest
-@ContextCustomizerFactories(RedisClusterContextCustomizerFactory::class)
-annotation class EmbeddedRedisCluster( // FIXME rename to EmbeddedRedisHighAvailability
+@ContextCustomizerFactories(RedisHighAvailabilityContextCustomizerFactory::class)
+annotation class EmbeddedRedisHighAvailability(
 
     /**
      * The name of the replication group. If nothing is set, the group will be given the common english name of a
@@ -63,21 +65,21 @@ annotation class EmbeddedRedisCluster( // FIXME rename to EmbeddedRedisHighAvail
 
     /**
      * The path to the directory to execute the Redis server nodes and sentinels in. If set, the Redis executable will
-     * be executed in the given directory. Applies to the nodes of all replication groups and all sentinels as well.
+     * be executed in the given directory. Applies to all nodes and all sentinels as well.
      *
      * @see redis.embedded.core.ExecutableProvider.newJarResourceProvider
      */
     val executeInDirectory: String = "",
 
     /**
-     * Customizes how the replication groups and/or sentinels of the Redis cluster are built. Customizers are executed
-     * by their order in this array.
+     * Customizes how the nodes and sentinels of embedded Redis in high availability mode are built. Customizers are
+     * executed by their order in this array.
      *
      * Each customizer must have no-arg constructor.
      *
-     * @see RedisClusterCustomizer
+     * @see RedisHighAvailabilityCustomizer
      */
-    val customizer: Array<KClass<out RedisClusterCustomizer>> = []
+    val customizer: Array<KClass<out RedisHighAvailabilityCustomizer>> = []
 ) {
 
     /**

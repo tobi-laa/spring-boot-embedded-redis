@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import redis.clients.jedis.JedisSentinelPool

@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisFlushAll
@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @Nested
 @IntegrationTest
-@EmbeddedRedisCluster
+@EmbeddedRedisHighAvailability
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @TestClassOrder(ClassOrderer.OrderAnnotation::class)
-@DisplayName("Test @RedisFlushAll annotation for Redis cluster")
+@DisplayName("Test @RedisFlushAll annotation for Redis in high availability mode")
 internal class FlushAllTest {
 
     @Autowired

@@ -1,9 +1,9 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
-import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
 import io.github.tobi.laa.spring.boot.embedded.redis.shardedcluster.EmbeddedRedisShardedCluster
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
@@ -41,7 +41,7 @@ internal class RedisParameterResolver : ParameterResolver {
 
     private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
         return type.isAssignableFrom(RedisCluster::class.java)
-                && annotatedWith(extensionContext, EmbeddedRedisCluster::class.java)
+                && annotatedWith(extensionContext, EmbeddedRedisHighAvailability::class.java)
     }
 
     private fun shardedClusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {

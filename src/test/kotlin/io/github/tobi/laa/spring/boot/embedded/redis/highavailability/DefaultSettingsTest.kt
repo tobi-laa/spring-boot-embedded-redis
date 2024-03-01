@@ -1,8 +1,8 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.DefaultSettingsTest.NameCapturingCustomizer
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.DefaultSettingsTest.NameCapturingCustomizer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,8 +10,8 @@ import redis.embedded.core.RedisSentinelBuilder
 import redis.embedded.core.RedisServerBuilder
 
 @IntegrationTest
-@EmbeddedRedisCluster(customizer = [NameCapturingCustomizer::class])
-@DisplayName("Using @EmbeddedRedisCluster with default settings")
+@EmbeddedRedisHighAvailability(customizer = [NameCapturingCustomizer::class])
+@DisplayName("Using @EmbeddedRedisHighAvailability with default settings")
 internal class DefaultSettingsTest {
 
     @Autowired
@@ -52,26 +52,26 @@ internal class DefaultSettingsTest {
         lateinit var name: String
     }
 
-    internal class NameCapturingCustomizer : RedisClusterCustomizer {
+    internal class NameCapturingCustomizer : RedisHighAvailabilityCustomizer {
 
         override fun customizeMainNode(
             builder: RedisServerBuilder,
-            config: EmbeddedRedisCluster
+            config: EmbeddedRedisHighAvailability
         ) {
             name = config.name
         }
 
         override fun customizeReplicas(
             builder: List<RedisServerBuilder>,
-            config: EmbeddedRedisCluster
+            config: EmbeddedRedisHighAvailability
         ) {
             // no-op
         }
 
         override fun customizeSentinels(
             builder: RedisSentinelBuilder,
-            config: EmbeddedRedisCluster,
-            sentinelConfig: EmbeddedRedisCluster.Sentinel
+            config: EmbeddedRedisHighAvailability,
+            sentinelConfig: EmbeddedRedisHighAvailability.Sentinel
         ) {
             // no-op
         }

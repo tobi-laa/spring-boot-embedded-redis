@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -9,9 +9,9 @@ import redis.embedded.Redis
 import redis.embedded.RedisCluster
 
 @IntegrationTest
-@EmbeddedRedisCluster
+@EmbeddedRedisHighAvailability
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-@DisplayName("Parameter resolver test for @EmbeddedRedisCluster")
+@DisplayName("Parameter resolver test for @EmbeddedRedisHighAvailability")
 internal class ParamResolverTest {
 
     var paramsFromBeforeEach = listOf<Redis>()

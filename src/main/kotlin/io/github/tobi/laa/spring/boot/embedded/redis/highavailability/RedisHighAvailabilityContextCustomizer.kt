@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -26,8 +26,8 @@ import kotlin.streams.toList
 private const val DEFAULT_BIND = "::1"
 private const val QUORUM_SIZE = (1 / 2) + 1 // quorom size for one main node
 
-internal class RedisClusterContextCustomizer(
-    private val config: EmbeddedRedisCluster,
+internal class RedisHighAvailabilityContextCustomizer(
+    private val config: EmbeddedRedisHighAvailability,
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
@@ -40,24 +40,24 @@ internal class RedisClusterContextCustomizer(
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
-            val cluster = createAndStartCluster(context)
-            val sentinelAddresses = parseSentinelAddresses(cluster)
+            val redisHighAvailability = createAndStartRedisInHighAvailabilityMode(context)
+            val sentinelAddresses = parseSentinelAddresses(redisHighAvailability)
             val client = createClient(sentinelAddresses)
             setSpringProperties(context, sentinelAddresses)
-            addShutdownListener(context, cluster, client)
-            Pair(cluster, client)
+            addShutdownListener(context, redisHighAvailability, client)
+            Pair(redisHighAvailability, client)
         }
     }
 
-    private fun createAndStartCluster(context: ConfigurableApplicationContext): RedisCluster {
+    private fun createAndStartRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
         nodePorts = ports().iterator()
         nodeBinds = binds().iterator()
-        val cluster = createCluster(context)
-        cluster.start()
-        return cluster
+        val redisHighAvailability = createRedisInHighAvailabilityMode(context)
+        redisHighAvailability.start()
+        return redisHighAvailability
     }
 
-    private fun createCluster(context: ConfigurableApplicationContext): RedisCluster {
+    private fun createRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
         val replicationGroup = createReplicationGroup(context)
         val sentinels = config.sentinels.map { createSentinel(it, replicationGroup) }
         return RedisCluster(sentinels, replicationGroup.second + replicationGroup.first.node)
@@ -132,7 +132,7 @@ internal class RedisClusterContextCustomizer(
     }
 
     private fun createSentinel(
-        sentinelConfig: EmbeddedRedisCluster.Sentinel,
+        sentinelConfig: EmbeddedRedisHighAvailability.Sentinel,
         replicationGroup: Pair<Node, List<RedisServer>>
     ): RedisSentinel {
         val mainNode = replicationGroup.first
@@ -150,8 +150,8 @@ internal class RedisClusterContextCustomizer(
         return builder.build()
     }
 
-    private fun parseSentinelAddresses(cluster: RedisCluster): List<Pair<String, Int>> =
-        cluster.sentinels()
+    private fun parseSentinelAddresses(redisHighAvailability: RedisCluster): List<Pair<String, Int>> =
+        redisHighAvailability.sentinels()
             .map { parseBindAddress(it) to it.ports().first() }
             .toList()
 
@@ -172,11 +172,15 @@ internal class RedisClusterContextCustomizer(
         ).applyTo(context.environment)
     }
 
-    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
+    private fun addShutdownListener(
+        context: ConfigurableApplicationContext,
+        redisHighAvailability: Redis,
+        client: RedisClient
+    ) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 client.close()
-                server.stop()
+                redisHighAvailability.stop()
             }
         }
     }
@@ -185,7 +189,7 @@ internal class RedisClusterContextCustomizer(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RedisClusterContextCustomizer
+        other as RedisHighAvailabilityContextCustomizer
 
         return config == other.config
     }

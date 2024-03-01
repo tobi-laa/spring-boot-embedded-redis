@@ -1,4 +1,4 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
@@ -15,39 +15,39 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import redis.embedded.Redis
 
-@DisplayName("Tests for RedisShardedClusterContextCustomizer")
+@DisplayName("Tests for RedisHighAvailabilityContextCustomizer")
 @ExtendWith(MockKExtension::class)
-internal class RedisClusterContextCustomizerTest {
+internal class RedisHighAvailabilityContextCustomizerTest {
 
     @RelaxedMockK
     private lateinit var portProvider: PortProvider
 
-    private val config = EmbeddedRedisCluster()
+    private val config = EmbeddedRedisHighAvailability()
 
-    private lateinit var givenCustomizer: RedisClusterContextCustomizer
+    private lateinit var givenCustomizer: RedisHighAvailabilityContextCustomizer
 
     @BeforeEach
     fun init() {
-        givenCustomizer = RedisClusterContextCustomizer(config, portProvider)
+        givenCustomizer = RedisHighAvailabilityContextCustomizer(config, portProvider)
     }
 
 
     @Test
-    @DisplayName("RedisClusterContextCustomizer.equals() should be true for itself")
+    @DisplayName("RedisHighAvailabilityContextCustomizer.equals() should be true for itself")
     fun sameObject_equals_shouldBeTrue() {
         val comparedToSelf = givenCustomizer.equals(givenCustomizer)
         assertThat(comparedToSelf).isTrue()
     }
 
     @Test
-    @DisplayName("RedisClusterContextCustomizer.equals() should be false for null objects")
+    @DisplayName("RedisHighAvailabilityContextCustomizer.equals() should be false for null objects")
     fun null_equals_shouldBeFalse() {
         val comparedToDifferentClass = givenCustomizer.equals(null)
         assertThat(comparedToDifferentClass).isFalse()
     }
 
     @Test
-    @DisplayName("RedisClusterContextCustomizer.equals() should be false for object with different class")
+    @DisplayName("RedisHighAvailabilityContextCustomizer.equals() should be false for object with different class")
     fun differentClass_equals_shouldBeFalse() {
         val comparedToDifferentClass = givenCustomizer.equals("I'm not a RedisServerContextCustomizer")
         assertThat(comparedToDifferentClass).isFalse()
@@ -59,7 +59,7 @@ internal class RedisClusterContextCustomizerTest {
         var server: Redis?
         var client: RedisClient?
         AnnotationConfigApplicationContext().use {
-            RedisClusterContextCustomizerFactory()
+            RedisHighAvailabilityContextCustomizerFactory()
                 .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
                 .customizeContext(it, mockk())
             it.refresh()
@@ -71,6 +71,6 @@ internal class RedisClusterContextCustomizerTest {
         assertThatThrownBy { client!!.get("FOO") }.isInstanceOf(Exception::class.java)
     }
 
-    @EmbeddedRedisCluster
+    @EmbeddedRedisHighAvailability
     private class AnnotatedClass
 }

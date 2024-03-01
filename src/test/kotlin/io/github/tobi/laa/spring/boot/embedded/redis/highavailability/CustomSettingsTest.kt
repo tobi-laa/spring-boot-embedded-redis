@@ -1,14 +1,14 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability.Sentinel
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 @IntegrationTest
-@EmbeddedRedisCluster(
+@EmbeddedRedisHighAvailability(
     name = "Zigzag Heron",
     replicas = 2,
     binds = ["127.0.0.1", "localhost", "::1"],
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
             parallelSyncs = 2
         )]
 )
-@DisplayName("Using @EmbeddedRedisCluster with custom settings")
+@DisplayName("Using @EmbeddedRedisHighAvailability with custom settings")
 internal class CustomSettingsTest {
 
     @Autowired

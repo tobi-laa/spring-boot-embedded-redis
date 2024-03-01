@@ -1,9 +1,9 @@
-package io.github.tobi.laa.spring.boot.embedded.redis.cluster
+package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
 import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.CustomCustomizerTest.*
-import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Sentinel
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.CustomCustomizerTest.*
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability.Sentinel
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +14,7 @@ private const val CAPPED_HERON_MAIN_PORT = 10000
 private const val SENTINEL_PORT = 30000
 
 @IntegrationTest
-@EmbeddedRedisCluster(
+@EmbeddedRedisHighAvailability(
     name = "Capped Heron",
     sentinels = [Sentinel()],
     customizer = [
@@ -23,7 +23,7 @@ private const val SENTINEL_PORT = 30000
         // this customizer will have no effect as it is not applied to "Capped Heron"
         SetsProtectedModeForReplicasOfBareThroatedTigerHeron::class]
 )
-@DisplayName("Using @EmbeddedRedisCluster with several customizers")
+@DisplayName("Using @EmbeddedRedisHighAvailability with several customizers")
 internal open class CustomCustomizerTest {
 
     @Autowired
@@ -48,7 +48,7 @@ internal open class CustomCustomizerTest {
     }
 
     @Test
-    @DisplayName("Settings from customizer should have been applied to the embedded Redis cluster")
+    @DisplayName("Settings from customizer should have been applied to the embedded Redis in high availability mode")
     fun settingsFromCustomizerShouldHaveBeenApplied() {
         given.nothing()
             .whenDoingNothing()
@@ -60,50 +60,50 @@ internal open class CustomCustomizerTest {
             .withOne().thatRunsOn("::1", CAPPED_HERON_MAIN_PORT)
     }
 
-    internal class SetsPortOfMainNodeForCappedHeron : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
+    internal class SetsPortOfMainNodeForCappedHeron : RedisHighAvailabilityCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisHighAvailability) {
             if (config.name == "Capped Heron") {
                 builder.port(CAPPED_HERON_MAIN_PORT)
             }
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
         override fun customizeSentinels(
             builder: RedisSentinelBuilder,
-            config: EmbeddedRedisCluster,
+            config: EmbeddedRedisHighAvailability,
             sentinelConfig: Sentinel
         ) {
             // no-op
         }
     }
 
-    internal class SetsPortOfSentinel : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
+    internal class SetsPortOfSentinel : RedisHighAvailabilityCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
         override fun customizeSentinels(
             builder: RedisSentinelBuilder,
-            config: EmbeddedRedisCluster,
+            config: EmbeddedRedisHighAvailability,
             sentinelConfig: Sentinel
         ) {
             builder.port(SENTINEL_PORT)
         }
     }
 
-    internal class SetsProtectedModeForReplicasOfBareThroatedTigerHeron : RedisClusterCustomizer {
-        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisCluster) {
+    internal class SetsProtectedModeForReplicasOfBareThroatedTigerHeron : RedisHighAvailabilityCustomizer {
+        override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisHighAvailability) {
             // no-op
         }
 
-        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisCluster) {
+        override fun customizeReplicas(builder: List<RedisServerBuilder>, config: EmbeddedRedisHighAvailability) {
             if (config.name == "Bare-throated Tiger Heron") {
                 builder.forEach { it.setting("protected-mode yes") }
             }
@@ -111,7 +111,7 @@ internal open class CustomCustomizerTest {
 
         override fun customizeSentinels(
             builder: RedisSentinelBuilder,
-            config: EmbeddedRedisCluster,
+            config: EmbeddedRedisHighAvailability,
             sentinelConfig: Sentinel
         ) {
             // no-op
