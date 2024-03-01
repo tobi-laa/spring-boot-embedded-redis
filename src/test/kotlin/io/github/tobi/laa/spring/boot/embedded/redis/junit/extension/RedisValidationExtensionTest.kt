@@ -445,6 +445,7 @@ internal class RedisValidationExtensionTest {
     @EmbeddedRedisStandalone(customizer = [CustomizerWithoutNoArgsConstructor::class])
     internal class StandaloneWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
+    @Suppress("unused")
     internal class CustomizerWithoutNoArgsConstructor(val sth: String) : RedisStandaloneCustomizer {
         override fun accept(builder: RedisServerBuilder, config: EmbeddedRedisStandalone) {
             // no-op
@@ -537,6 +538,7 @@ internal class RedisValidationExtensionTest {
     @EmbeddedRedisCluster(customizer = [ClusterCustomizerWithoutNoArgsConstructor::class])
     internal class ClusterWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
+    @Suppress("unused")
     internal class ClusterCustomizerWithoutNoArgsConstructor(val sth: String) : RedisShardCustomizer {
 
         override fun customizeMainNode(
@@ -676,6 +678,7 @@ internal class RedisValidationExtensionTest {
     @EmbeddedRedisHighAvailability(customizer = [HighAvailabilityCustomizerWithoutNoArgsConstructor::class])
     internal class HighAvailabilityWithCustomizerWithoutNoArgsConstructor : WithDummyTest()
 
+    @Suppress("unused")
     internal class HighAvailabilityCustomizerWithoutNoArgsConstructor(val sth: String) :
         RedisHighAvailabilityCustomizer {
         override fun customizeMainNode(builder: RedisServerBuilder, config: EmbeddedRedisHighAvailability) {
