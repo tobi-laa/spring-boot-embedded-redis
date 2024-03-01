@@ -35,6 +35,7 @@ internal class RedisValidationExtensionTest {
     private lateinit var testKitBuilder: EngineTestKit.Builder
     private lateinit var results: EngineExecutionResults
 
+    @DisplayName("Test classes annotated with more than one embedded Redis annotation should fail")
     @ParameterizedTest(name = "Test class annotated with {0} should fail")
     @ArgumentsSource(ClassesWithMultipleAnnotationsProvider::class)
     fun classWithMoreThanOneAnnotation_executingTests_shouldFail(clazz: Class<*>) {
@@ -50,6 +51,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisStandalone with invalid ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisStandalone with port {0} should fail")
     @ArgumentsSource(StandaloneWithInvalidPortProvider::class)
     fun standalone_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
@@ -110,6 +112,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisCluster with invalid number of replicas should fail")
     @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
     @ArgumentsSource(ClusterWithInvalidNOfReplicasProvider::class)
     fun cluster_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
@@ -125,6 +128,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisCluster with invalid number of ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisCluster with {0} should fail")
     @ArgumentsSource(ClusterWithInvalidNOfPortsProvider::class)
     fun cluster_invalidNOfPort_executingTests_shouldFail(clazz: Class<*>) {
@@ -140,6 +144,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisCluster with invalid ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisCluster with ports {0} should fail")
     @ArgumentsSource(ClusterWithInvalidPortsProvider::class)
     fun cluster_invalidPort_executingTests_shouldFail(clazz: Class<*>) {
@@ -178,6 +183,7 @@ internal class RedisValidationExtensionTest {
         thenEvents().doNotHave(event(finishedWithFailure()))
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisCluster with invalid initialization timeout should fail")
     @ParameterizedTest(name = "@EmbeddedRedisCluster with initialization timeout {0} should fail")
     @ArgumentsSource(ClusterWithInvalidInitTimeoutProvider::class)
     fun cluster_invalidInitTimeout_executingTests_shouldFail(clazz: Class<*>) {
@@ -223,6 +229,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid number of replicas should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidNOfReplicasProvider::class)
     fun highAvailability_invalidNOfReplicas_executingTests_shouldFail(clazz: Class<*>) {
@@ -238,6 +245,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid number of ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidNOfPortsProvider::class)
     fun highAvailability_invalidNOfPorts_executingTests_shouldFail(clazz: Class<*>) {
@@ -253,6 +261,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with ports {0} should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidPortsProvider::class)
     fun highAvailability_invalidPorts_executingTests_shouldFail(clazz: Class<*>) {
@@ -268,6 +277,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid downAfterMillis should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} timeout for unreachable nodes should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidDownAfterMillisProvider::class)
     fun highAvailability_invalidDownAfterMillis_executingTests_shouldFail(clazz: Class<*>) {
@@ -283,6 +293,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid failover timeout should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} failover timeout should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidFailOverTimeoutMillisProvider::class)
     fun highAvailability_invalidFailOverTimeoutMillis_executingTests_shouldFail(clazz: Class<*>) {
@@ -298,6 +309,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid parallel syncs should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} parallel syncs should fail")
     @ArgumentsSource(HighAvailabilityWithInvalidParallelSyncsProvider::class)
     fun highAvailability_invalidParallelSyncs_executingTests_shouldFail(clazz: Class<*>) {
@@ -328,6 +340,7 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @DisplayName("Test classes annotated with @EmbeddedRedisHighAvailability with invalid ports should fail")
     @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} should fail")
     @ArgumentsSource(HighAvailabilityWithDuplicatePortsProvider::class)
     fun highAvailability_portsSpecifiedMoreThanOnce_executingTests_shouldFail(clazz: Class<*>) {

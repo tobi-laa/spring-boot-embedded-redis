@@ -82,7 +82,7 @@ internal class RedisParameterResolverTest {
     }
 
     @ExtendWith(RedisParameterResolver::class)
-    internal inner class RedisStandaloneUnresolvable : WithDummyTest() {
+    internal class RedisStandaloneUnresolvable : WithDummyTest() {
 
         @BeforeEach
         fun dummy(redis: RedisServer) {
@@ -91,7 +91,7 @@ internal class RedisParameterResolverTest {
     }
 
     @ExtendWith(RedisParameterResolver::class)
-    internal inner class RedisClusterUnresolvable : WithDummyTest() {
+    internal class RedisClusterUnresolvable : WithDummyTest() {
 
         @BeforeEach
         fun dummy(redis: RedisShardedCluster) {
@@ -100,7 +100,7 @@ internal class RedisParameterResolverTest {
     }
 
     @ExtendWith(RedisParameterResolver::class)
-    internal inner class RedisHighAvailabilityUnresolvable : WithDummyTest() {
+    internal class RedisHighAvailabilityUnresolvable : WithDummyTest() {
 
         @BeforeEach
         fun dummy(redis: RedisCluster) {

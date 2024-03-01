@@ -83,6 +83,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
     exclude("**/RedisValidationExtensionTest$*")
+    exclude("**/RedisParameterResolverTest$*")
 }
 
 tasks.jacocoTestReport {
