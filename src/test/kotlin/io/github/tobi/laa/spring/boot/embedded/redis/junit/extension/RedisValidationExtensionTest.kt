@@ -260,6 +260,51 @@ internal class RedisValidationExtensionTest {
             )
     }
 
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} timeout for unreachable nodes should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidDownAfterMillisProvider::class)
+    fun highAvailability_invalidDownAfterMillis_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Timeout for unreachable nodes must be greater than 0")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} failover timeout should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidFailOverTimeoutMillisProvider::class)
+    fun highAvailability_invalidFailOverTimeoutMillis_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Failover timeout must be greater than 0")
+                    )
+                )
+            )
+    }
+
+    @ParameterizedTest(name = "@EmbeddedRedisHighAvailability with {0} parallel syncs should fail")
+    @ArgumentsSource(HighAvailabilityWithInvalidParallelSyncsProvider::class)
+    fun highAvailability_invalidParallelSyncs_executingTests_shouldFail(clazz: Class<*>) {
+        givenTestClass(clazz)
+        whenExecutingTests()
+        thenEvents()
+            .haveAtLeastOne(
+                event(
+                    finishedWithFailure(
+                        message("Parallel syncs must be greater than 0")
+                    )
+                )
+            )
+    }
+
     @Test
     @DisplayName("@EmbeddedRedisHighAvailability with customizer that does not have a no-args constructor should fail")
     fun highAvailability_customizerWithoutNoArgsConstructor_executingTests_shouldFail() {
@@ -559,6 +604,54 @@ internal class RedisValidationExtensionTest {
 
         @EmbeddedRedisHighAvailability(sentinels = [Sentinel(port = 65536)])
         internal class Port65536Sentinel : WithDummyTest()
+    }
+
+    internal class HighAvailabilityWithInvalidDownAfterMillisProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("0 as", Zero::class.java)),
+                arguments(named("a negative number as", Negative::class.java))
+            )
+        }
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(downAfterMillis = 0)])
+        internal class Zero : WithDummyTest()
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(downAfterMillis = -1)])
+        internal class Negative : WithDummyTest()
+    }
+
+    internal class HighAvailabilityWithInvalidFailOverTimeoutMillisProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("0 as", Zero::class.java)),
+                arguments(named("a negative number as", Negative::class.java))
+            )
+        }
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(failOverTimeoutMillis = 0)])
+        internal class Zero : WithDummyTest()
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(failOverTimeoutMillis = -1)])
+        internal class Negative : WithDummyTest()
+    }
+
+    internal class HighAvailabilityWithInvalidParallelSyncsProvider : ArgumentsProvider {
+
+        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+            return Stream.of(
+                arguments(named("0 as", Zero::class.java)),
+                arguments(named("a negative number as", Negative::class.java))
+            )
+        }
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(parallelSyncs = 0)])
+        internal class Zero : WithDummyTest()
+
+        @EmbeddedRedisHighAvailability(sentinels = [Sentinel(parallelSyncs = -1)])
+        internal class Negative : WithDummyTest()
     }
 
     @EmbeddedRedisHighAvailability(customizer = [HighAvailabilityCustomizerWithoutNoArgsConstructor::class])
