@@ -34,7 +34,7 @@ internal class RedisStandaloneContextCustomizerTest {
     @Test
     @DisplayName("RedisStandaloneContextCustomizer.equals() should be false for object with different class")
     fun differentClass_equals_shouldBeFalse() {
-        val comparedToDifferentClass = givenCustomizer.equals("I'm not a RedisServerContextCustomizer")
+        val comparedToDifferentClass = givenCustomizer.equals("I'm not a RedisStandaloneContextCustomizer")
         assertThat(comparedToDifferentClass).isFalse()
     }
 
@@ -53,7 +53,7 @@ internal class RedisStandaloneContextCustomizerTest {
             client = RedisStore.client(it)
         }
         assertThat(server!!.isActive).isFalse()
-        assertThatThrownBy { client!!.flushAll() }.isInstanceOf(Exception::class.java)
+        assertThatThrownBy { client!!.get("FOO") }.isInstanceOf(Exception::class.java)
     }
 
     @EmbeddedRedisStandalone

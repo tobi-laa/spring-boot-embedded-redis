@@ -33,7 +33,6 @@ internal class RedisValidationExtension : BeforeAllCallback {
             annotations(context, EmbeddedRedisCluster::class.java)
         )
             .flatMap { it.stream() }
-            .filter { it != null }
             .count()
         require(count <= 1) { "Only one of @EmbeddedRedisStandalone, @EmbeddedRedisHighAvailability, @EmbeddedRedisCluster is allowed" }
     }

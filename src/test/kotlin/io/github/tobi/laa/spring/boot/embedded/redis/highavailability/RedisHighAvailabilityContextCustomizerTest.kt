@@ -49,7 +49,7 @@ internal class RedisHighAvailabilityContextCustomizerTest {
     @Test
     @DisplayName("RedisHighAvailabilityContextCustomizer.equals() should be false for object with different class")
     fun differentClass_equals_shouldBeFalse() {
-        val comparedToDifferentClass = givenCustomizer.equals("I'm not a RedisServerContextCustomizer")
+        val comparedToDifferentClass = givenCustomizer.equals("I'm not a RedisHighAvailabilityContextCustomizer")
         assertThat(comparedToDifferentClass).isFalse()
     }
 

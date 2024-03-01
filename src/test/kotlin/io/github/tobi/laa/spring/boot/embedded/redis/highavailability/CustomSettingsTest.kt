@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired
     ports = [7000, 7001, 7002],
     sentinels = [
         Sentinel(
-            bind = "127.0.0.1", // FIXME not working for Ipv6, should properly escape
+            bind = "127.0.0.1",
             port = 22222,
-            downAfterMillis = 30000,
+            downAfterMillis = 40000,
             failOverTimeoutMillis = 60000,
             parallelSyncs = 2
         )]
@@ -47,7 +47,7 @@ internal class CustomSettingsTest {
             .shouldHaveSentinels()
             .thatHaveASizeOf(1)
             .withAtLeastOne()
-            // .thatHasDownAfterMillis("ZigzagHeron", 30000) // FIXME dropped by config rewrite?
+            .thatHasDownAfterMillis("ZigzagHeron", 40000)
             .thatHasFailOverTimeoutMillis("ZigzagHeron", 60000)
             .thatHasParallelSyncs("ZigzagHeron", 2)
             .andAlso()

@@ -3,6 +3,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
+import io.github.tobi.laa.spring.boot.embedded.redis.createAddress
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
@@ -119,7 +120,7 @@ internal class RedisClusterContextCustomizer(
     private fun setSpringProperties(context: ConfigurableApplicationContext, addresses: List<Pair<String, Int>>) {
         TestPropertyValues.of(
             mapOf(
-                "spring.data.redis.cluster.nodes" to addresses.joinToString(",") { "${it.first}:${it.second}" }
+                "spring.data.redis.cluster.nodes" to addresses.joinToString(",") { createAddress(it.first, it.second) }
             )
         ).applyTo(context.environment)
     }

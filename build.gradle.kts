@@ -4,6 +4,7 @@ val springBootVersion = "3.2.3"
 val junitPlatformVersion = "1.10.2"
 val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.1"
+val commonsValidatorVersion = "1.8.0"
 val mockkVersion = "1.13.10"
 val archunitVersion = "1.2.1"
 
@@ -60,6 +61,7 @@ dependencies {
     implementation("org.springframework:spring-test")
     implementation("org.slf4j:slf4j-api")
     implementation("redis.clients:jedis")
+    implementation("commons-validator:commons-validator:$commonsValidatorVersion")
     compileOnly("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.junit.jupiter:junit-jupiter")

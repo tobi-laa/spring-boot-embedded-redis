@@ -5,6 +5,7 @@ import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
+import io.github.tobi.laa.spring.boot.embedded.redis.createAddress
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
@@ -156,7 +157,8 @@ internal class RedisHighAvailabilityContextCustomizer(
             .toList()
 
     private fun createClient(sentinelAddresses: List<Pair<String, Int>>): RedisClient {
-        val jedisSentinelPool = JedisSentinelPool(name, sentinelAddresses.map { it.first + ':' + it.second }.toSet())
+        val jedisSentinelPool =
+            JedisSentinelPool(name, sentinelAddresses.map { createAddress(it.first, it.second) }.toSet())
         return JedisHighAvailabilityClient(jedisSentinelPool)
     }
 
@@ -164,10 +166,16 @@ internal class RedisHighAvailabilityContextCustomizer(
         context: ConfigurableApplicationContext,
         sentinelAddresses: List<Pair<String, Int>>
     ) {
+        val nodes = sentinelAddresses.joinToString(",") {
+            createAddress(
+                it.first,
+                it.second
+            )
+        }
         TestPropertyValues.of(
             mapOf(
                 "spring.data.redis.sentinel.master" to name,
-                "spring.data.redis.sentinel.nodes" to sentinelAddresses.joinToString(",") { "${it.first}:${it.second}" }
+                "spring.data.redis.sentinel.nodes" to nodes
             )
         ).applyTo(context.environment)
     }

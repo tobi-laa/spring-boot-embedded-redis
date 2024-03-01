@@ -4,8 +4,7 @@ import org.springframework.core.annotation.MergedAnnotations.SearchStrategy.TYPE
 import org.springframework.core.annotation.MergedAnnotations.search
 import org.springframework.test.context.TestContextAnnotationUtils.searchEnclosingClass
 
-
-internal inline fun <reified T : Annotation> findTestClassAnnotations(
+internal fun <T : Annotation> findTestClassAnnotations(
     testClass: Class<*>,
     annotationType: Class<T>
 ): List<T> {
