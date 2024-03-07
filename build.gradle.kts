@@ -10,7 +10,7 @@ val archunitVersion = "1.2.1"
 
 plugins {
     val springDependencyManagementVersion = "1.1.4"
-    val kotlinVersion = "1.9.22"
+    val kotlinVersion = "1.9.23"
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "4.4.1.3373"
     val gradleReleasePluginVersion = "3.0.2"
