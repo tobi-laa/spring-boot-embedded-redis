@@ -28,6 +28,7 @@ private val INITIALIZATION_TIMEOUT_PROP = RedisShardedCluster::class.java.declar
  */
 @Component
 @Scope("prototype")
+@Suppress("unused")
 internal class RedisTests(
     val props: RedisProperties,
     val template: RedisTemplate<String, Any>,
