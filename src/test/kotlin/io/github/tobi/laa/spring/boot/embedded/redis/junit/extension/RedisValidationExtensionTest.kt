@@ -1,18 +1,23 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
-import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Shard
+import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisClusterContextCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisShardCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.EmbeddedRedisHighAvailability.Sentinel
+import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.RedisHighAvailabilityContextCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.highavailability.RedisHighAvailabilityCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.EmbeddedRedisStandalone
+import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneContextCustomizer
 import io.github.tobi.laa.spring.boot.embedded.redis.standalone.RedisStandaloneCustomizer
+import io.mockk.every
+import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
 import org.assertj.core.api.ListAssert
-import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Named.named
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -31,10 +36,29 @@ import redis.embedded.core.RedisServerBuilder
 import java.util.stream.Stream
 
 @DisplayName("Testing the validations of embedded Redis annotations")
+@TestInstance(PER_CLASS)
 internal class RedisValidationExtensionTest {
 
     private lateinit var testKitBuilder: EngineTestKit.Builder
     private lateinit var results: EngineExecutionResults
+
+    @BeforeAll
+    fun mockContextCustomizers() {
+        mockkConstructor(RedisClusterContextCustomizer::class)
+        mockkConstructor(RedisHighAvailabilityContextCustomizer::class)
+        mockkConstructor(RedisStandaloneContextCustomizer::class)
+        
+        every { anyConstructed<RedisClusterContextCustomizer>().customizeContext(any(), any()) } answers { }
+        every { anyConstructed<RedisHighAvailabilityContextCustomizer>().customizeContext(any(), any()) } answers { }
+        every { anyConstructed<RedisStandaloneContextCustomizer>().customizeContext(any(), any()) } answers { }
+    }
+
+    @AfterAll
+    fun unmockContextCustomizers() {
+        unmockkConstructor(RedisClusterContextCustomizer::class)
+        unmockkConstructor(RedisHighAvailabilityContextCustomizer::class)
+        unmockkConstructor(RedisStandaloneContextCustomizer::class)
+    }
 
     @DisplayName("Test classes annotated with more than one embedded Redis annotation should fail")
     @ParameterizedTest(name = "Test class annotated with {0} should fail")
@@ -530,7 +554,6 @@ internal class RedisValidationExtensionTest {
     @EmbeddedRedisCluster(ports = [1, 2, 2])
     internal class ClusterWithDuplicatePorts : WithDummyTest()
 
-    @IntegrationTest
     @EmbeddedRedisCluster(ports = [0, 0, 1])
     internal class ClusterPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
@@ -735,11 +758,11 @@ internal class RedisValidationExtensionTest {
         internal class DupPortsTwoSentinels : WithDummyTest()
     }
 
-    @IntegrationTest
     @EmbeddedRedisHighAvailability(ports = [0, 0, 1], sentinels = [Sentinel(port = 0)])
     internal class HighAvailabilityPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
     internal abstract class WithDummyTest {
+
         @Test
         fun dummy() {
         }
