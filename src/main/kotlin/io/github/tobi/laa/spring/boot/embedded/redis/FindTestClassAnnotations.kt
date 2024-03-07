@@ -10,7 +10,7 @@ internal fun <T : Annotation> findTestClassAnnotations(
 ): List<T> {
     var clazz = testClass
     val mergedAnnotations = mutableListOf(search(TYPE_HIERARCHY).from(testClass))
-    while (searchEnclosingClass(clazz) && clazz.enclosingClass != null) {
+    while (searchEnclosingClass(clazz)) {
         clazz = clazz.enclosingClass
         mergedAnnotations += search(TYPE_HIERARCHY).from(clazz)
     }
