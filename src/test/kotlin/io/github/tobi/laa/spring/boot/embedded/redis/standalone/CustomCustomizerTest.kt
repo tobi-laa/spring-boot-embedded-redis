@@ -19,7 +19,7 @@ private const val TEST_PORT = 10000
         SetsProtectedMode::class]
 )
 @DisplayName("Using @EmbeddedRedisStandalone with several customizers")
-internal open class CustomCustomizerTest {
+internal class CustomCustomizerTest {
 
     @Autowired
     private lateinit var given: RedisTests

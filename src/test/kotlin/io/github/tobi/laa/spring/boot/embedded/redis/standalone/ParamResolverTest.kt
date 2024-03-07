@@ -67,7 +67,7 @@ internal class ParamResolverTest {
         @JvmStatic
         @BeforeAll
         fun injectContext(context: ApplicationContext) {
-            this.context = context
+            Companion.context = context
         }
 
         @JvmStatic

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @EmbeddedRedisStandalone
 @DisplayName("Using @EmbeddedRedisStandalone on a top level class with nested classes should work fine")
-class NestedClassesTest {
+internal class NestedClassesTest {
 
     @Nested
     @IntegrationTest

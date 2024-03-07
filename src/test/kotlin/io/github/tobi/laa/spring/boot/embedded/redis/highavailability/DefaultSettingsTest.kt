@@ -35,9 +35,9 @@ internal class DefaultSettingsTest {
             .then().embeddedRedis()
             .shouldHaveNodes()
             .thatHaveASizeOf(3)
-            .withOne().thatRunsOn("::1", 6379)
-            .and().withOne().thatRunsOn("::1", 6380)
-            .and().withOne().thatRunsOn("::1", 6381)
+            .withOne().thatRunsOn("127.0.0.1", 6379)
+            .and().withOne().thatRunsOn("127.0.0.1", 6380)
+            .and().withOne().thatRunsOn("127.0.0.1", 6381)
     }
 
     @Test

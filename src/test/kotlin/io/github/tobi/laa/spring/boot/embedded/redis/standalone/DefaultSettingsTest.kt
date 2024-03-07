@@ -10,7 +10,7 @@ import redis.embedded.Redis
 @IntegrationTest
 @EmbeddedRedisStandalone
 @DisplayName("Using @EmbeddedRedisStandalone with default settings")
-internal open class DefaultSettingsTest {
+internal class DefaultSettingsTest {
 
     @Autowired
     private lateinit var given: RedisTests

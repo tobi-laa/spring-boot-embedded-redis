@@ -6,7 +6,6 @@ import io.github.tobi.laa.spring.boot.embedded.redis.RedisTests
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 
-@Nested
 @IntegrationTest
 @EmbeddedRedisHighAvailability
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)

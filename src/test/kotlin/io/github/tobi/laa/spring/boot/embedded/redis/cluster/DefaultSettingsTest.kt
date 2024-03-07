@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 @IntegrationTest
 @EmbeddedRedisCluster
 @DisplayName("Using @EmbeddedRedisCluster with default settings")
-internal open class DefaultSettingsTest {
+internal class DefaultSettingsTest {
 
     @Autowired
     private lateinit var given: RedisTests

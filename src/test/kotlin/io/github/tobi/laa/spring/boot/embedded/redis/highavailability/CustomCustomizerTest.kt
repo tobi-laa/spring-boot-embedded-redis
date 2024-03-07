@@ -24,7 +24,7 @@ private const val SENTINEL_PORT = 30000
         SetsProtectedModeForReplicasOfBareThroatedTigerHeron::class]
 )
 @DisplayName("Using @EmbeddedRedisHighAvailability with several customizers")
-internal open class CustomCustomizerTest {
+internal class CustomCustomizerTest {
 
     @Autowired
     private lateinit var given: RedisTests
@@ -57,7 +57,7 @@ internal open class CustomCustomizerTest {
             .andAlso().embeddedRedis()
             .shouldHaveNodes()
             .thatHaveASizeOf(3)
-            .withOne().thatRunsOn("::1", CAPPED_HERON_MAIN_PORT)
+            .withOne().thatRunsOn("127.0.0.1", CAPPED_HERON_MAIN_PORT)
     }
 
     internal class SetsPortOfMainNodeForCappedHeron : RedisHighAvailabilityCustomizer {

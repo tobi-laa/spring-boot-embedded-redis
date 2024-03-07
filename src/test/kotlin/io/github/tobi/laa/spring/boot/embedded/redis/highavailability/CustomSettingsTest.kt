@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired
 @EmbeddedRedisHighAvailability(
     name = "Zigzag Heron",
     replicas = 2,
-    binds = ["127.0.0.1", "localhost", "::1"],
-    ports = [26379, 7001, 7002],
+    binds = ["", "localhost", "::1"],
+    ports = [7001, 26379, 7002],
     sentinels = [
         Sentinel(
             bind = "127.0.0.1",
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
             failOverTimeoutMillis = 60000,
             parallelSyncs = 2
         ),
-        Sentinel(port = 0)]
+        Sentinel(bind = "", port = 0)]
 )
 @DisplayName("Using @EmbeddedRedisHighAvailability with custom settings")
 internal class CustomSettingsTest {
@@ -37,7 +37,7 @@ internal class CustomSettingsTest {
             .then().redisProperties()
             .shouldBeSentinel()
             .shouldHaveNode("127.0.0.1", 22222)
-            .shouldHaveNode("localhost", 26380)
+            .shouldHaveNode("127.0.0.1", 26380)
     }
 
     @Test
@@ -56,8 +56,8 @@ internal class CustomSettingsTest {
             .embeddedRedis()
             .shouldHaveNodes()
             .thatHaveASizeOf(3)
-            .withOne().thatRunsOn("127.0.0.1", 26379)
-            .and().withOne().thatRunsOn("localhost", 7001)
+            .withOne().thatRunsOn("127.0.0.1", 7001)
+            .and().withOne().thatRunsOn("localhost", 26379)
             .and().withOne().thatRunsOn("::1", 7002)
     }
 

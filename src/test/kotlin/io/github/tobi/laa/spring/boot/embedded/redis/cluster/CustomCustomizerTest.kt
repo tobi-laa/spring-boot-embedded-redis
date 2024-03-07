@@ -23,7 +23,7 @@ private const val CAPPED_HERON_MAIN_PORT = 10000
         SetsProtectedModeForReplicasOfBareThroatedTigerHeron::class]
 )
 @DisplayName("Using @EmbeddedRedisCluster with several customizers")
-internal open class CustomCustomizerTest {
+internal class CustomCustomizerTest {
 
     @Autowired
     private lateinit var given: RedisTests
