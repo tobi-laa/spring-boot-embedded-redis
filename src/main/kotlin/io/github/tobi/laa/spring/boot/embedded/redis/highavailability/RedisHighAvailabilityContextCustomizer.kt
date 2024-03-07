@@ -5,6 +5,7 @@ import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
+import org.slf4j.LoggerFactory
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
@@ -30,6 +31,8 @@ internal class RedisHighAvailabilityContextCustomizer(
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     private val manuallySpecifiedPorts =
         config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
     private val name = config.name.ifEmpty { BirdNameProvider.next() }.replace(Regex("[^a-zA-Z0-9]"), "")
@@ -53,6 +56,7 @@ internal class RedisHighAvailabilityContextCustomizer(
         nodeBinds = binds().iterator()
         val redisHighAvailability = createRedisInHighAvailabilityMode(context)
         redisHighAvailability.start()
+        log.info("Started Redis in high availability mode on ports ${redisHighAvailability.ports()}")
         return redisHighAvailability
     }
 
@@ -83,8 +87,11 @@ internal class RedisHighAvailabilityContextCustomizer(
         customizer.forEach { c -> c.customizeMainNode(builder, config) }
         val mainNode = builder.build()
         mainNode.start()
+        val port = mainNode.ports().first()
+        log.info("Started Redis main node for high availability mode on port $port")
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
+                log.info("Stopping Redis main node for high availability mode on ports $port")
                 stopSafely(mainNode)
             }
         }
@@ -186,6 +193,7 @@ internal class RedisHighAvailabilityContextCustomizer(
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 closeSafely(client)
+                log.info("Stopping Redis in high availability mode on ports ${redisHighAvailability.ports()}")
                 redisHighAvailability.sentinels().forEach { stopSafely(it) }
                 redisHighAvailability.servers().forEach { stopSafely(it) }
             }

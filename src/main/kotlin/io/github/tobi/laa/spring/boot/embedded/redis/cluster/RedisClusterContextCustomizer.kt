@@ -3,6 +3,7 @@ package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 import io.github.tobi.laa.spring.boot.embedded.redis.*
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
+import org.slf4j.LoggerFactory
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
@@ -28,6 +29,8 @@ internal class RedisClusterContextCustomizer(
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
@@ -44,6 +47,7 @@ internal class RedisClusterContextCustomizer(
     private fun createAndStartCluster(): RedisShardedCluster {
         val cluster = createCluster()
         cluster.start()
+        log.info("Started Redis sharded cluster on ports ${cluster.ports()}")
         return cluster
     }
 
@@ -130,6 +134,7 @@ internal class RedisClusterContextCustomizer(
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 closeSafely(client)
+                log.info("Stopping Redis sharded clusters on ports ${cluster.ports()}")
                 cluster.servers().forEach { stopSafely(it) }
             }
         }

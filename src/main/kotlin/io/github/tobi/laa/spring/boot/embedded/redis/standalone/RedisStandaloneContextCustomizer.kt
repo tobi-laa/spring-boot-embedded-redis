@@ -8,6 +8,7 @@ import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.stopSafely
+import org.slf4j.LoggerFactory
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
@@ -26,6 +27,8 @@ internal class RedisStandaloneContextCustomizer(
     private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
             val server = createAndStartServer()
@@ -40,6 +43,7 @@ internal class RedisStandaloneContextCustomizer(
     private fun createAndStartServer(): Redis {
         val server = createServer()
         server.start()
+        log.info("Started standalone Redis server on port ${server.ports().first()}")
         return server
     }
 
@@ -82,6 +86,7 @@ internal class RedisStandaloneContextCustomizer(
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
                 closeSafely(client)
+                log.info("Stopping standalone Redis server on port ${server.ports().first()}")
                 stopSafely(server)
             }
         }
