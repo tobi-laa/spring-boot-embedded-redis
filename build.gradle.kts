@@ -7,6 +7,7 @@ val embeddedRedisVersion = "1.4.1"
 val commonsValidatorVersion = "1.8.0"
 val mockkVersion = "1.13.10"
 val archunitVersion = "1.2.1"
+val logunitVersion = "2.0.0"
 
 plugins {
     val springDependencyManagementVersion = "1.1.4"
@@ -64,6 +65,7 @@ dependencies {
     implementation("commons-validator:commons-validator:$commonsValidatorVersion")
     compileOnly("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("io.github.netmikey.logunit:logunit-logback:$logunitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.junit.platform:junit-platform-testkit")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -71,6 +73,7 @@ dependencies {
     testImplementation("com.jayway.jsonpath:json-path:$jsonPathVersion") // override transitive dep due to CVE violation
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
+    testImplementation("io.github.netmikey.logunit:logunit-core:$logunitVersion")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,9 +1,7 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.cluster
 
-import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
-import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import io.github.tobi.laa.spring.boot.embedded.redis.*
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
-import io.github.tobi.laa.spring.boot.embedded.redis.createAddress
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
@@ -12,7 +10,6 @@ import org.springframework.test.context.ContextCustomizer
 import org.springframework.test.context.MergedContextConfiguration
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisCluster
-import redis.embedded.Redis
 import redis.embedded.RedisServer
 import redis.embedded.RedisServer.newRedisServer
 import redis.embedded.RedisShardedCluster
@@ -125,11 +122,15 @@ internal class RedisClusterContextCustomizer(
         ).applyTo(context.environment)
     }
 
-    private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
+    private fun addShutdownListener(
+        context: ConfigurableApplicationContext,
+        cluster: RedisShardedCluster,
+        client: RedisClient
+    ) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
-                client.close()
-                server.stop()
+                closeSafely(client)
+                cluster.servers().forEach { stopSafely(it) }
             }
         }
     }

@@ -1,11 +1,9 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.highavailability
 
-import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
-import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import io.github.tobi.laa.spring.boot.embedded.redis.*
 import io.github.tobi.laa.spring.boot.embedded.redis.birds.BirdNameProvider
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
-import io.github.tobi.laa.spring.boot.embedded.redis.createAddress
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
@@ -24,7 +22,7 @@ import java.util.stream.IntStream
 import kotlin.reflect.full.createInstance
 import kotlin.streams.toList
 
-private const val DEFAULT_BIND = "::1"
+private const val DEFAULT_BIND = "127.0.0.1"
 private const val QUORUM_SIZE = (1 / 2) + 1 // quorom size for one main node
 
 internal class RedisHighAvailabilityContextCustomizer(
@@ -87,7 +85,7 @@ internal class RedisHighAvailabilityContextCustomizer(
         mainNode.start()
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
-                mainNode.stop()
+                stopSafely(mainNode)
             }
         }
         return Node(mainNode)
@@ -109,16 +107,16 @@ internal class RedisHighAvailabilityContextCustomizer(
     private fun ports(): List<Int> {
         return if (config.ports.isEmpty()) {
             val nOfNodes = config.replicas + 1
-            IntStream.range(0, nOfNodes).map { _ -> portProvider.next() }.toList()
+            IntStream.range(0, nOfNodes).map { _ -> unspecifiedUnusedPort() }.toList()
         } else {
             config.ports.map { if (it == 0) unspecifiedUnusedPort() else it }.toList()
         }
     }
 
-    private fun unspecifiedUnusedPort(): Int {
-        var port = portProvider.next()
+    private fun unspecifiedUnusedPort(sentinel: Boolean = false): Int {
+        var port = portProvider.next(sentinel)
         while (port in manuallySpecifiedPorts) {
-            port = portProvider.next()
+            port = portProvider.next(sentinel)
         }
         return port
     }
@@ -139,7 +137,7 @@ internal class RedisHighAvailabilityContextCustomizer(
         val mainNode = replicationGroup.first
         val builder = RedisSentinel.newRedisSentinel()
             .bind(sentinelConfig.bind.ifEmpty { DEFAULT_BIND })
-            .port(if (sentinelConfig.port == 0) portProvider.next(true) else sentinelConfig.port)
+            .port(if (sentinelConfig.port == 0) unspecifiedUnusedPort(true) else sentinelConfig.port)
             .setting("sentinel monitor $name ${mainNode.bind} ${mainNode.port} $QUORUM_SIZE")
             .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
             .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
@@ -182,13 +180,14 @@ internal class RedisHighAvailabilityContextCustomizer(
 
     private fun addShutdownListener(
         context: ConfigurableApplicationContext,
-        redisHighAvailability: Redis,
+        redisHighAvailability: RedisCluster,
         client: RedisClient
     ) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
-                client.close()
-                redisHighAvailability.stop()
+                closeSafely(client)
+                redisHighAvailability.sentinels().forEach { stopSafely(it) }
+                redisHighAvailability.servers().forEach { stopSafely(it) }
             }
         }
     }

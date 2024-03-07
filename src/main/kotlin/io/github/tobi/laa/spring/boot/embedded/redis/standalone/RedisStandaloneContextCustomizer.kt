@@ -2,10 +2,12 @@ package io.github.tobi.laa.spring.boot.embedded.redis.standalone
 
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import io.github.tobi.laa.spring.boot.embedded.redis.RedisStore
+import io.github.tobi.laa.spring.boot.embedded.redis.closeSafely
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConf
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import io.github.tobi.laa.spring.boot.embedded.redis.ports.PortProvider
+import io.github.tobi.laa.spring.boot.embedded.redis.stopSafely
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextClosedEvent
@@ -79,8 +81,8 @@ internal class RedisStandaloneContextCustomizer(
     private fun addShutdownListener(context: ConfigurableApplicationContext, server: Redis, client: RedisClient) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
-                client.close()
-                server.stop()
+                closeSafely(client)
+                stopSafely(server)
             }
         }
     }
