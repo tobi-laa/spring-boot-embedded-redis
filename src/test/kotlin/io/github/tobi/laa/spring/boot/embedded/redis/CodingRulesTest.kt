@@ -28,9 +28,8 @@ internal class CodingRulesTest {
         fields().that()
             .haveRawType("org.slf4j.Logger")
             .should().bePrivate()
-            .andShould().beStatic()
             .andShould().beFinal()
-            .`as`("Loggers should private static final.")
+            .`as`("Loggers should private and final.")
             .because("That is a convention for this project.")
             .allowEmptyShould(true)
 

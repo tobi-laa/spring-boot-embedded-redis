@@ -1,5 +1,6 @@
 package io.github.tobi.laa.spring.boot.embedded.redis.junit.extension
 
+import io.github.tobi.laa.spring.boot.embedded.redis.IntegrationTest
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.EmbeddedRedisCluster.Shard
 import io.github.tobi.laa.spring.boot.embedded.redis.cluster.RedisShardCustomizer
@@ -529,6 +530,7 @@ internal class RedisValidationExtensionTest {
     @EmbeddedRedisCluster(ports = [1, 2, 2])
     internal class ClusterWithDuplicatePorts : WithDummyTest()
 
+    @IntegrationTest
     @EmbeddedRedisCluster(ports = [0, 0, 1])
     internal class ClusterPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
@@ -733,6 +735,7 @@ internal class RedisValidationExtensionTest {
         internal class DupPortsTwoSentinels : WithDummyTest()
     }
 
+    @IntegrationTest
     @EmbeddedRedisHighAvailability(ports = [0, 0, 1], sentinels = [Sentinel(port = 0)])
     internal class HighAvailabilityPortZeroSpecifiedMultipleTimes : WithDummyTest()
 
