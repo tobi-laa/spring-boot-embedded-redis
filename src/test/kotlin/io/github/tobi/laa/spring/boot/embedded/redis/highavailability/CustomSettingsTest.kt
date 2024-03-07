@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
     name = "Zigzag Heron",
     replicas = 2,
     binds = ["", "localhost", "::1"],
-    ports = [7001, 26379, 7002],
+    ports = [0, 26379, 7002],
     sentinels = [
         Sentinel(
             bind = "127.0.0.1",
@@ -56,7 +56,7 @@ internal class CustomSettingsTest {
             .embeddedRedis()
             .shouldHaveNodes()
             .thatHaveASizeOf(3)
-            .withOne().thatRunsOn("127.0.0.1", 7001)
+            .withOne().thatRunsOn("127.0.0.1", 6379)
             .and().withOne().thatRunsOn("localhost", 26379)
             .and().withOne().thatRunsOn("::1", 7002)
     }

@@ -36,8 +36,7 @@ internal class RedisHighAvailabilityContextCustomizer(
     private val manuallySpecifiedPorts =
         config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
     private val name = config.name.ifEmpty { BirdNameProvider.next() }.replace(Regex("[^a-zA-Z0-9]"), "")
-    private lateinit var nodePorts: Iterator<Int>
-    private lateinit var nodeBinds: Iterator<String>
+    private lateinit var nodeProvider: NodeProvider
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
@@ -52,8 +51,7 @@ internal class RedisHighAvailabilityContextCustomizer(
     }
 
     private fun createAndStartRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
-        nodePorts = ports().iterator()
-        nodeBinds = binds().iterator()
+        nodeProvider = nodeProvider()
         val redisHighAvailability = createRedisInHighAvailabilityMode(context)
         redisHighAvailability.start()
         log.info("Started Redis in high availability mode on ports ${redisHighAvailability.ports()}")
@@ -63,24 +61,25 @@ internal class RedisHighAvailabilityContextCustomizer(
     private fun createRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
         val replicationGroup = createReplicationGroup(context)
         val sentinels = config.sentinels.map { createSentinel(it, replicationGroup) }
-        return RedisCluster(sentinels, replicationGroup.second + replicationGroup.first.node)
+        return RedisCluster(sentinels, replicationGroup.second)
     }
 
     private fun createReplicationGroup(context: ConfigurableApplicationContext): Pair<Node, List<RedisServer>> {
         val mainNode = createAndStartMainNode(context)
         val replicaBuilders =
             IntStream.range(0, config.replicas)
-                .mapToObj { _ -> createReplicaBuilder(mainNode) }
+                .mapToObj { _ -> createReplicaBuilder(mainNode.first) }
                 .toList()
         customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config) }
 
-        return Pair(mainNode, replicaBuilders.map { it.build() })
+        return Pair(mainNode.first, replicaBuilders.map { it.build() } + mainNode.second)
     }
 
-    private fun createAndStartMainNode(context: ConfigurableApplicationContext): Node {
+    private fun createAndStartMainNode(context: ConfigurableApplicationContext): Pair<Node, RedisServer> {
+        val nextNode = nodeProvider.next()
         val builder = RedisServer.newRedisServer()
-            .bind(nodeBinds.next())
-            .port(nodePorts.next())
+            .bind(nextNode.bind)
+            .port(nextNode.port)
         if (config.executeInDirectory.isNotEmpty()) {
             builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
         }
@@ -95,15 +94,16 @@ internal class RedisHighAvailabilityContextCustomizer(
                 stopSafely(mainNode)
             }
         }
-        return Node(mainNode)
+        return Node(mainNode) to mainNode
     }
 
     private fun createReplicaBuilder(
         mainNode: Node
     ): RedisServerBuilder {
+        val nextNode = nodeProvider.next()
         val builder = RedisServer.newRedisServer()
-            .bind(nodeBinds.next())
-            .port(nodePorts.next())
+            .bind(nextNode.bind)
+            .port(nextNode.port)
             .slaveOf(mainNode.bind, mainNode.port)
         if (config.executeInDirectory.isNotEmpty()) {
             builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
@@ -111,13 +111,20 @@ internal class RedisHighAvailabilityContextCustomizer(
         return builder
     }
 
-    private fun ports(): List<Int> {
-        return if (config.ports.isEmpty()) {
+    private fun nodeProvider(): NodeProvider {
+        val ports = if (config.ports.isEmpty()) {
             val nOfNodes = config.replicas + 1
             IntStream.range(0, nOfNodes).map { _ -> unspecifiedUnusedPort() }.toList()
         } else {
             config.ports.map { if (it == 0) unspecifiedUnusedPort() else it }.toList()
         }
+        val binds = if (config.binds.isEmpty()) {
+            val nOfNodes = config.replicas + 1
+            IntStream.range(0, nOfNodes).mapToObj { _ -> DEFAULT_BIND }.toList()
+        } else {
+            config.binds.map { it.ifEmpty { DEFAULT_BIND } }.toList()
+        }
+        return NodeProvider(ports, binds)
     }
 
     private fun unspecifiedUnusedPort(sentinel: Boolean = false): Int {
@@ -126,15 +133,6 @@ internal class RedisHighAvailabilityContextCustomizer(
             port = portProvider.next(sentinel)
         }
         return port
-    }
-
-    private fun binds(): List<String> {
-        return if (config.binds.isEmpty()) {
-            val nOfNodes = config.replicas + 1
-            IntStream.range(0, nOfNodes).mapToObj { _ -> DEFAULT_BIND }.toList()
-        } else {
-            config.binds.map { it.ifEmpty { DEFAULT_BIND } }.toList()
-        }
     }
 
     private fun createSentinel(
@@ -213,9 +211,18 @@ internal class RedisHighAvailabilityContextCustomizer(
         return config.hashCode()
     }
 
-    internal data class Node(val node: RedisServer, val port: Int, val bind: String) {
+    internal class NodeProvider(private val addresses: Iterator<Pair<Int, String>>) {
+
+        constructor(ports: List<Int>, binds: List<String>) : this(ports.zip(binds).iterator())
+
+        fun next(): Node {
+            val (port, bind) = addresses.next()
+            return Node(port, bind)
+        }
+    }
+
+    internal data class Node(val port: Int, val bind: String) {
         constructor(node: RedisServer) : this(
-            node,
             node.ports().first(),
             parseBindAddress(node)
         )
