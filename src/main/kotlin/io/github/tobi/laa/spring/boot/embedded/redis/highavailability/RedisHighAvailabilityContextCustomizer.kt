@@ -20,7 +20,7 @@ import redis.embedded.core.ExecutableProvider
 import redis.embedded.core.ExecutableProvider.newJarResourceProvider
 import redis.embedded.core.ExecutableProvider.newProvidedVersionsMap
 import redis.embedded.core.RedisServerBuilder
-import redis.embedded.model.OsArchitecture
+import redis.embedded.model.OsArchitecture.detectOSandArchitecture
 import redis.embedded.util.IO.writeResourceToExecutableFile
 import java.nio.file.Files.exists
 import java.util.stream.IntStream
@@ -44,13 +44,14 @@ internal class RedisHighAvailabilityContextCustomizer(
     private var nodeProvider: NodeProvider? = null
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
     private val executableProvider = if (config.executeInDirectory.isNotEmpty()) {
-        val osArch = OsArchitecture.detectOSandArchitecture()
-        val executable = Path(config.executeInDirectory, newProvidedVersionsMap()[osArch]!!)
+        val osArch = detectOSandArchitecture()
+        val resourcePath = newProvidedVersionsMap()[osArch]!!
+        val executable = Path(config.executeInDirectory, resourcePath)
         ExecutableProvider {
             if (exists(executable)) {
                 executable.toFile()
             } else {
-                writeResourceToExecutableFile(executable.parent.toFile(), executable.fileName.toString())
+                writeResourceToExecutableFile(executable.parent.toFile(), resourcePath)
             }
         }
     } else {
