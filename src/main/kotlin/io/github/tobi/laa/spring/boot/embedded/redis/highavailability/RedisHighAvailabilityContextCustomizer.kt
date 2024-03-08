@@ -18,9 +18,15 @@ import redis.embedded.RedisSentinel
 import redis.embedded.RedisServer
 import redis.embedded.core.ExecutableProvider
 import redis.embedded.core.ExecutableProvider.newJarResourceProvider
+import redis.embedded.core.ExecutableProvider.newProvidedVersionsMap
 import redis.embedded.core.RedisServerBuilder
+import redis.embedded.model.OsArchitecture
+import redis.embedded.util.IO.writeResourceToExecutableFile
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Files.exists
 import java.util.stream.IntStream
+import kotlin.io.path.Path
 import kotlin.reflect.full.createInstance
 import kotlin.streams.toList
 
@@ -40,7 +46,15 @@ internal class RedisHighAvailabilityContextCustomizer(
     private var nodeProvider: NodeProvider? = null
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
     private val executableProvider = if (config.executeInDirectory.isNotEmpty()) {
-        newJarResourceProvider(File(config.executeInDirectory))
+        val osArch = OsArchitecture.detectOSandArchitecture()
+        val executable = Path(config.executeInDirectory, newProvidedVersionsMap()[osArch]!!)
+        ExecutableProvider {
+            if (exists(executable)) {
+                executable.toFile()
+            } else {
+                writeResourceToExecutableFile(executable.parent.toFile(), executable.fileName.toString())
+            }
+        }
     } else {
         newJarResourceProvider()
     }
