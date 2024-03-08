@@ -81,5 +81,3 @@ If you have some integration tests running without an embedded Redis and some wi
 This library is heavily inspired by the awesome https://github.com/maciejwalkowiak/wiremock-spring-boot[WireMock Spring Boot] library.
 
 Furthermore, this library would of course not exist without the https://github.com/codemonstur/embedded-redis[`embedded-redis`] library.
-
-include::CONTRIBUTING.adoc[]
