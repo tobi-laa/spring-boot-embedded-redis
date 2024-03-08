@@ -45,7 +45,8 @@ internal class RedisHighAvailabilityContextCustomizer(
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
     private val executableProvider = if (config.executeInDirectory.isNotEmpty()) {
         val osArch = detectOSandArchitecture()
-        val resourcePath = newProvidedVersionsMap()[osArch]!!
+        val resourcePath = newProvidedVersionsMap()[osArch]
+                ?: throw UnsupportedOperationException("Unsupported OS: $osArch")
         val executable = Path(config.executeInDirectory, resourcePath)
         ExecutableProvider {
             if (exists(executable)) {

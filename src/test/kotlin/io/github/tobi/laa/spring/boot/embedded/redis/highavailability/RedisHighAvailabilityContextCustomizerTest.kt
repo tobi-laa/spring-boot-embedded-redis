@@ -10,14 +10,22 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkConstructor
+import io.mockk.mockkStatic
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import redis.embedded.Redis
+import redis.embedded.model.Architecture.aarch64
+import redis.embedded.model.OS.WINDOWS
+import redis.embedded.model.OsArchitecture
+import java.io.File
+
+private const val CUSTOM_EXECUTION_DIR = "build/custom-execution-dir-high-availability"
 
 @DisplayName("Tests for RedisHighAvailabilityContextCustomizer")
 @ExtendWith(MockKExtension::class)
@@ -29,6 +37,14 @@ internal class RedisHighAvailabilityContextCustomizerTest {
     private val config = EmbeddedRedisHighAvailability()
 
     private lateinit var givenCustomizer: RedisHighAvailabilityContextCustomizer
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            File(CUSTOM_EXECUTION_DIR).mkdirs()
+        }
+    }
 
     @BeforeEach
     fun init() {
@@ -57,6 +73,24 @@ internal class RedisHighAvailabilityContextCustomizerTest {
     }
 
     @Test
+    @DisplayName("RedisHighAvailabilityContextCustomizer should throw when unsupported OS was detected")
+    fun unsupportedOS_shouldThrow() {
+        val windowsArm64 = OsArchitecture(WINDOWS, aarch64)
+        mockkStatic(OsArchitecture::detectOSandArchitecture) {
+            every { OsArchitecture.detectOSandArchitecture() } returns windowsArm64
+            assertThatThrownBy {
+                AnnotationConfigApplicationContext().use {
+                    RedisHighAvailabilityContextCustomizerFactory()
+                            .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+                            .customizeContext(it, mockk())
+                    it.refresh()
+                    it.start()
+                }
+            }.isInstanceOf(UnsupportedOperationException::class.java).hasMessage("Unsupported OS: $windowsArm64")
+        }
+    }
+
+    @Test
     @DisplayName("RedisHighAvailabilityContextCustomizer should throw NoSuchElementException when no nodes are available")
     fun noNodes_shouldThrow() {
         mockkConstructor(NodeProvider::class) {
@@ -64,8 +98,8 @@ internal class RedisHighAvailabilityContextCustomizerTest {
             assertThatThrownBy {
                 AnnotationConfigApplicationContext().use {
                     RedisHighAvailabilityContextCustomizerFactory()
-                        .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
-                        .customizeContext(it, mockk())
+                            .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+                            .customizeContext(it, mockk())
                     it.refresh()
                     it.start()
                 }
@@ -78,14 +112,14 @@ internal class RedisHighAvailabilityContextCustomizerTest {
     fun notEnoughNodes_shouldThrow() {
         mockkConstructor(NodeProvider::class) {
             every { anyConstructed<NodeProvider>().next() } returns Node(
-                12345,
-                "127.0.0.1"
+                    12345,
+                    "127.0.0.1"
             ) andThenThrows NoSuchElementException()
             assertThatThrownBy {
                 AnnotationConfigApplicationContext().use {
                     RedisHighAvailabilityContextCustomizerFactory()
-                        .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
-                        .customizeContext(it, mockk())
+                            .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+                            .customizeContext(it, mockk())
                     it.refresh()
                     it.start()
                 }
@@ -135,8 +169,8 @@ internal class RedisHighAvailabilityContextCustomizerTest {
         var client: RedisClient?
         AnnotationConfigApplicationContext().use {
             RedisHighAvailabilityContextCustomizerFactory()
-                .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
-                .customizeContext(it, mockk())
+                    .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+                    .customizeContext(it, mockk())
             it.refresh()
             it.start()
             server = RedisStore.server(it)
@@ -146,6 +180,6 @@ internal class RedisHighAvailabilityContextCustomizerTest {
         assertThatThrownBy { client!!.get("FOO") }.isInstanceOf(Exception::class.java)
     }
 
-    @EmbeddedRedisHighAvailability(ports = [0, 0, 0])
+    @EmbeddedRedisHighAvailability(ports = [0, 0, 0], executeInDirectory = CUSTOM_EXECUTION_DIR)
     private class AnnotatedClass
 }
