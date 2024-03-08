@@ -1,14 +1,14 @@
-= Contributing to `spring-boot-embedded-redis`
+== Contributing to `spring-boot-embedded-redis`
 
 `spring-boot-embedded-redis` is released under the Apache 2.0 license.
 Read on if you would like to contribute!
 
-== Code of Conduct
+=== Code of Conduct
 
 This project adheres to the Contributor Covenant xref:CODE_OF_CONDUCT.adoc[code of conduct].
 By participating, you are expected to uphold this code.
 
-== Using GitHub Issues
+=== Using GitHub Issues
 
 This project uses GitHub issues to track bugs and enhancements.
 Please check the following before opening an issue:
@@ -16,7 +16,7 @@ Please check the following before opening an issue:
 * your issue is not a duplicate/is not already addressed by another issue
 * your issue affects the latest available release
 
-== Code Conventions and Housekeeping
+=== Code Conventions and Housekeeping
 
 None of these is essential for a pull request, but they will all help.
 They can also be added after the original pull request but before a merge.
@@ -30,7 +30,7 @@ Depending on the change this might entail unit tests, integration tests or both.
 This project breaks at less than 100% code coverage, so this is a must.
 * Keep your feature branch up-to-date with `main`.
 
-== Building from Source
+=== Building from Source
 
 The project can be built from the root directory using:
 
@@ -39,7 +39,7 @@ The project can be built from the root directory using:
 gradle clean build
 ----
 
-== Releases
+=== Releases
 
 Releases are automatically built and published to Maven Central once a tag following the semantic versioning pattern is pushed (i.e. `v1.0.0`).
 

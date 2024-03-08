@@ -6,3 +6,80 @@ image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring
 image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring-boot-embedded-redis&metric=coverage[Coverage,link=https://sonarcloud.io/summary/new_code?id=tobias-laa_spring-boot-embedded-redis]
 
 = Spring Boot `embedded-redis`
+
+This library provides an easy way to run an embedded Redis server in your Spring Boot integration tests.
+It mainly acts as a glue between the https://github.com/codemonstur/embedded-redis[`embedded-redis`] library and Spring Boot.
+
+== Usage
+
+To use the library, add the following dependency to your `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.github.tobi-laa</groupId>
+    <artifactId>spring-boot-embedded-redis</artifactId>
+    <version>1.0.0</version>
+    <scope>test</scope>
+</dependency>
+----
+
+You can then declaratively start and stop the embedded Redis server in your integration tests using the `@EmbeddedRedisStandalone` annotation:
+
+[source,java]
+----
+@EmbeddedRedisStandalone
+@SpringBootTest
+class MyIntegrationTest {
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Test
+    void testSomething() {
+        redisTemplate.opsForValue().set("key", "value");
+        assertThat(redisTemplate.opsForValue().get("key")).isEqualTo("value");
+    }
+}
+----
+
+This will start an embedded Redis server before the Spring context corresponding to the test class is loaded for the first time and stop it after the context is closed.
+The necessary Spring Data Redis properties are automatically set.
+
+You can also use the `@EmbeddedRedisShardedCluster` annotation to start an embedded Redis cluster:
+
+[source,java]
+----
+@EmbeddedRedisShardedCluster
+@SpringBootTest
+class MyIntegrationTest {
+    // ...
+}
+----
+
+There is also the possibility to start the embedded Redis server in high availability mode with replicas and sentinels using the `@EmbeddedRedisHighAvailability` annotation:
+
+[source,java]
+----
+@EmbeddedRedisHighAvailability
+@SpringBootTest
+class MyIntegrationTest {
+    // ...
+}
+----
+
+By default, data stored in the embedded Redis server is flushed after each test method.
+You can disable this behavior by annotating your test class with `@RedisFlushAll(mode = Mode.AFTER_CLASS)` or `@RedisFlushAll(mode = Mode.NEVER)`.
+
+The embedded Redis instances will be started on free ports found starting at the default ports (that is, `6379` or `26379` for sentinels) and be bound to `localhost` by default.
+
+Using an embedded Redis does not break Spring's context caching.
+If you have some integration tests running without an embedded Redis and some with, you will however end up with two different contexts as the properties of the Spring context are modified.
+
+== Acknowledgements
+
+This library is heavily inspired by the awesome https://github.com/maciejwalkowiak/wiremock-spring-boot[WireMock Spring Boot] library.
+
+Furthermore, this library would of course not exist without the https://github.com/codemonstur/embedded-redis[`embedded-redis`] library.
+
+include::CONTRIBUTING.adoc[]
