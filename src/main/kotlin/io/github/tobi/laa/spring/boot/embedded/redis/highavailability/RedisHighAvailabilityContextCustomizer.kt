@@ -97,12 +97,6 @@ internal class RedisHighAvailabilityContextCustomizer(
         mainNode.start()
         val port = mainNode.ports().first()
         log.info("Started Redis main node for high availability mode on port $port")
-        context.addApplicationListener { event ->
-            if (event is ContextClosedEvent) {
-                log.info("Stopping Redis main node for high availability mode on ports $port")
-                stopSafely(mainNode)
-            }
-        }
         return Node(mainNode) to mainNode
     }
 
