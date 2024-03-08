@@ -22,8 +22,6 @@ import redis.embedded.core.ExecutableProvider.newProvidedVersionsMap
 import redis.embedded.core.RedisServerBuilder
 import redis.embedded.model.OsArchitecture
 import redis.embedded.util.IO.writeResourceToExecutableFile
-import java.io.File
-import java.nio.file.Files
 import java.nio.file.Files.exists
 import java.util.stream.IntStream
 import kotlin.io.path.Path
