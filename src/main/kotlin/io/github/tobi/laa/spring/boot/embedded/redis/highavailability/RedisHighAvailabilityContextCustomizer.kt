@@ -59,7 +59,7 @@ internal class RedisHighAvailabilityContextCustomizer(
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
-            val mainNode = createAndStartMainNode(context)
+            val mainNode = createAndStartMainNode()
             try {
                 val redisHighAvailability = createAndStartRedisInHighAvailabilityMode(mainNode)
                 val sentinelAddresses = parseSentinelAddresses(redisHighAvailability)
@@ -97,7 +97,7 @@ internal class RedisHighAvailabilityContextCustomizer(
         return replicaBuilders.map { it.build() }
     }
 
-    private fun createAndStartMainNode(context: ConfigurableApplicationContext): Pair<Node, RedisServer> {
+    private fun createAndStartMainNode(): Pair<Node, RedisServer> {
         nodeProvider = nodeProvider()
         val nextNode = nodeProvider!!.next()
         val builder = RedisServer.newRedisServer()
