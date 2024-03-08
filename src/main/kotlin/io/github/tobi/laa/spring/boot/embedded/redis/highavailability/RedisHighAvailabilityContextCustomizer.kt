@@ -17,6 +17,7 @@ import redis.embedded.RedisCluster
 import redis.embedded.RedisSentinel
 import redis.embedded.RedisServer
 import redis.embedded.core.ExecutableProvider
+import redis.embedded.core.ExecutableProvider.newJarResourceProvider
 import redis.embedded.core.RedisServerBuilder
 import java.io.File
 import java.util.stream.IntStream
@@ -27,17 +28,22 @@ private const val DEFAULT_BIND = "127.0.0.1"
 private const val QUORUM_SIZE = (1 / 2) + 1 // quorom size for one main node
 
 internal class RedisHighAvailabilityContextCustomizer(
-    private val config: EmbeddedRedisHighAvailability,
-    private val portProvider: PortProvider = PortProvider()
+        private val config: EmbeddedRedisHighAvailability,
+        private val portProvider: PortProvider = PortProvider()
 ) : ContextCustomizer {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val manuallySpecifiedPorts =
-        config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
+            config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
     private val name = config.name.ifEmpty { BirdNameProvider.next() }.replace(Regex("[^a-zA-Z0-9]"), "")
     private var nodeProvider: NodeProvider? = null
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
+    private val executableProvider = if (config.executeInDirectory.isNotEmpty()) {
+        newJarResourceProvider(File(config.executeInDirectory))
+    } else {
+        newJarResourceProvider()
+    }
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
@@ -71,9 +77,9 @@ internal class RedisHighAvailabilityContextCustomizer(
 
     private fun createReplicas(mainNode: Pair<Node, RedisServer>): List<RedisServer> {
         val replicaBuilders =
-            IntStream.range(0, config.replicas)
-                .mapToObj { _ -> createReplicaBuilder(mainNode.first) }
-                .toList()
+                IntStream.range(0, config.replicas)
+                        .mapToObj { _ -> createReplicaBuilder(mainNode.first) }
+                        .toList()
         customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config) }
 
         return replicaBuilders.map { it.build() }
@@ -83,11 +89,9 @@ internal class RedisHighAvailabilityContextCustomizer(
         nodeProvider = nodeProvider()
         val nextNode = nodeProvider!!.next()
         val builder = RedisServer.newRedisServer()
-            .bind(nextNode.bind)
-            .port(nextNode.port)
-        if (config.executeInDirectory.isNotEmpty()) {
-            builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
-        }
+                .bind(nextNode.bind)
+                .port(nextNode.port)
+        builder.executableProvider(executableProvider)
         customizer.forEach { c -> c.customizeMainNode(builder, config) }
         val mainNode = builder.build()
         mainNode.start()
@@ -103,16 +107,14 @@ internal class RedisHighAvailabilityContextCustomizer(
     }
 
     private fun createReplicaBuilder(
-        mainNode: Node
+            mainNode: Node
     ): RedisServerBuilder {
         val nextNode = nodeProvider!!.next()
         val builder = RedisServer.newRedisServer()
-            .bind(nextNode.bind)
-            .port(nextNode.port)
-            .slaveOf(mainNode.bind, mainNode.port)
-        if (config.executeInDirectory.isNotEmpty()) {
-            builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
-        }
+                .bind(nextNode.bind)
+                .port(nextNode.port)
+                .slaveOf(mainNode.bind, mainNode.port)
+        builder.executableProvider(executableProvider)
         return builder
     }
 
@@ -141,56 +143,54 @@ internal class RedisHighAvailabilityContextCustomizer(
     }
 
     private fun createSentinel(
-        sentinelConfig: EmbeddedRedisHighAvailability.Sentinel,
-        mainNode: Pair<Node, RedisServer>
+            sentinelConfig: EmbeddedRedisHighAvailability.Sentinel,
+            mainNode: Pair<Node, RedisServer>
     ): RedisSentinel {
         val builder = RedisSentinel.newRedisSentinel()
-            .bind(sentinelConfig.bind.ifEmpty { DEFAULT_BIND })
-            .port(if (sentinelConfig.port == 0) unspecifiedUnusedPort(true) else sentinelConfig.port)
-            .setting("sentinel monitor $name ${mainNode.first.bind} ${mainNode.first.port} $QUORUM_SIZE")
-            .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
-            .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
-            .setting("sentinel parallel-syncs $name ${sentinelConfig.parallelSyncs}")
-        if (config.executeInDirectory.isNotEmpty()) {
-            builder.executableProvider(ExecutableProvider.newJarResourceProvider(File(config.executeInDirectory)))
-        }
+                .bind(sentinelConfig.bind.ifEmpty { DEFAULT_BIND })
+                .port(if (sentinelConfig.port == 0) unspecifiedUnusedPort(true) else sentinelConfig.port)
+                .setting("sentinel monitor $name ${mainNode.first.bind} ${mainNode.first.port} $QUORUM_SIZE")
+                .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
+                .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
+                .setting("sentinel parallel-syncs $name ${sentinelConfig.parallelSyncs}")
+        builder.executableProvider(executableProvider)
         customizer.forEach { c -> c.customizeSentinels(builder, config, sentinelConfig) }
         return builder.build()
     }
 
     private fun parseSentinelAddresses(redisHighAvailability: RedisCluster): List<Pair<String, Int>> =
-        redisHighAvailability.sentinels()
-            .map { parseBindAddress(it) to it.ports().first() }
-            .toList()
+            redisHighAvailability.sentinels()
+                    .map { parseBindAddress(it) to it.ports().first() }
+                    .toList()
 
     private fun createClient(sentinelAddresses: List<Pair<String, Int>>): RedisClient {
         val jedisSentinelPool =
-            JedisSentinelPool(name, sentinelAddresses.map { createAddress(it.first, it.second) }.toSet())
+                JedisSentinelPool(name, sentinelAddresses.map { createAddress(it.first, it.second) }.toSet())
         return RedisHighAvailabilityClient(jedisSentinelPool)
     }
 
     private fun setSpringProperties(
-        context: ConfigurableApplicationContext,
-        sentinelAddresses: List<Pair<String, Int>>
+            context: ConfigurableApplicationContext,
+            sentinelAddresses: List<Pair<String, Int>>
     ) {
         val nodes = sentinelAddresses.joinToString(",") {
             createAddress(
-                it.first,
-                it.second
+                    it.first,
+                    it.second
             )
         }
         TestPropertyValues.of(
-            mapOf(
-                "spring.data.redis.sentinel.master" to name,
-                "spring.data.redis.sentinel.nodes" to nodes
-            )
+                mapOf(
+                        "spring.data.redis.sentinel.master" to name,
+                        "spring.data.redis.sentinel.nodes" to nodes
+                )
         ).applyTo(context.environment)
     }
 
     private fun addShutdownListener(
-        context: ConfigurableApplicationContext,
-        redisHighAvailability: RedisCluster,
-        client: RedisClient
+            context: ConfigurableApplicationContext,
+            redisHighAvailability: RedisCluster,
+            client: RedisClient
     ) {
         context.addApplicationListener { event ->
             if (event is ContextClosedEvent) {
@@ -227,8 +227,8 @@ internal class RedisHighAvailabilityContextCustomizer(
 
     internal data class Node(val port: Int, val bind: String) {
         constructor(node: RedisServer) : this(
-            node.ports().first(),
-            parseBindAddress(node)
+                node.ports().first(),
+                parseBindAddress(node)
         )
     }
 
