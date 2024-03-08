@@ -36,47 +36,52 @@ internal class RedisHighAvailabilityContextCustomizer(
     private val manuallySpecifiedPorts =
         config.ports.filter { it != 0 }.toSet() + config.sentinels.map { it.port }.filter { it != 0 }.toSet()
     private val name = config.name.ifEmpty { BirdNameProvider.next() }.replace(Regex("[^a-zA-Z0-9]"), "")
-    private lateinit var nodeProvider: NodeProvider
+    private var nodeProvider: NodeProvider? = null
     private val customizer = config.customizer.map { c -> c.createInstance() }.toList()
 
     override fun customizeContext(context: ConfigurableApplicationContext, mergedConfig: MergedContextConfiguration) {
         RedisStore.computeIfAbsent(context) {
-            val redisHighAvailability = createAndStartRedisInHighAvailabilityMode(context)
-            val sentinelAddresses = parseSentinelAddresses(redisHighAvailability)
-            val client = createClient(sentinelAddresses)
-            setSpringProperties(context, sentinelAddresses)
-            addShutdownListener(context, redisHighAvailability, client)
-            Pair(redisHighAvailability, client)
+            val mainNode = createAndStartMainNode(context)
+            try {
+                val redisHighAvailability = createAndStartRedisInHighAvailabilityMode(mainNode)
+                val sentinelAddresses = parseSentinelAddresses(redisHighAvailability)
+                val client = createClient(sentinelAddresses)
+                setSpringProperties(context, sentinelAddresses)
+                addShutdownListener(context, redisHighAvailability, client)
+                Pair(redisHighAvailability, client)
+            } catch (e: Exception) {
+                stopSafely(mainNode.second)
+                throw e
+            }
         }
     }
 
-    private fun createAndStartRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
-        nodeProvider = nodeProvider()
-        val redisHighAvailability = createRedisInHighAvailabilityMode(context)
+    private fun createAndStartRedisInHighAvailabilityMode(mainNode: Pair<Node, RedisServer>): RedisCluster {
+        val redisHighAvailability = createRedisInHighAvailabilityMode(mainNode)
         redisHighAvailability.start()
         log.info("Started Redis in high availability mode on ports ${redisHighAvailability.ports()}")
         return redisHighAvailability
     }
 
-    private fun createRedisInHighAvailabilityMode(context: ConfigurableApplicationContext): RedisCluster {
-        val replicationGroup = createReplicationGroup(context)
-        val sentinels = config.sentinels.map { createSentinel(it, replicationGroup) }
-        return RedisCluster(sentinels, replicationGroup.second)
+    private fun createRedisInHighAvailabilityMode(mainNode: Pair<Node, RedisServer>): RedisCluster {
+        val replicas = createReplicas(mainNode)
+        val sentinels = config.sentinels.map { createSentinel(it, mainNode) }
+        return RedisCluster(sentinels, replicas + mainNode.second)
     }
 
-    private fun createReplicationGroup(context: ConfigurableApplicationContext): Pair<Node, List<RedisServer>> {
-        val mainNode = createAndStartMainNode(context)
+    private fun createReplicas(mainNode: Pair<Node, RedisServer>): List<RedisServer> {
         val replicaBuilders =
             IntStream.range(0, config.replicas)
                 .mapToObj { _ -> createReplicaBuilder(mainNode.first) }
                 .toList()
         customizer.forEach { c -> c.customizeReplicas(replicaBuilders, config) }
 
-        return Pair(mainNode.first, replicaBuilders.map { it.build() } + mainNode.second)
+        return replicaBuilders.map { it.build() }
     }
 
     private fun createAndStartMainNode(context: ConfigurableApplicationContext): Pair<Node, RedisServer> {
-        val nextNode = nodeProvider.next()
+        nodeProvider = nodeProvider()
+        val nextNode = nodeProvider!!.next()
         val builder = RedisServer.newRedisServer()
             .bind(nextNode.bind)
             .port(nextNode.port)
@@ -100,7 +105,7 @@ internal class RedisHighAvailabilityContextCustomizer(
     private fun createReplicaBuilder(
         mainNode: Node
     ): RedisServerBuilder {
-        val nextNode = nodeProvider.next()
+        val nextNode = nodeProvider!!.next()
         val builder = RedisServer.newRedisServer()
             .bind(nextNode.bind)
             .port(nextNode.port)
@@ -137,13 +142,12 @@ internal class RedisHighAvailabilityContextCustomizer(
 
     private fun createSentinel(
         sentinelConfig: EmbeddedRedisHighAvailability.Sentinel,
-        replicationGroup: Pair<Node, List<RedisServer>>
+        mainNode: Pair<Node, RedisServer>
     ): RedisSentinel {
-        val mainNode = replicationGroup.first
         val builder = RedisSentinel.newRedisSentinel()
             .bind(sentinelConfig.bind.ifEmpty { DEFAULT_BIND })
             .port(if (sentinelConfig.port == 0) unspecifiedUnusedPort(true) else sentinelConfig.port)
-            .setting("sentinel monitor $name ${mainNode.bind} ${mainNode.port} $QUORUM_SIZE")
+            .setting("sentinel monitor $name ${mainNode.first.bind} ${mainNode.first.port} $QUORUM_SIZE")
             .setting("sentinel down-after-milliseconds $name ${sentinelConfig.downAfterMillis}")
             .setting("sentinel failover-timeout $name ${sentinelConfig.failOverTimeoutMillis}")
             .setting("sentinel parallel-syncs $name ${sentinelConfig.parallelSyncs}")

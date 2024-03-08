@@ -58,9 +58,29 @@ internal class RedisHighAvailabilityContextCustomizerTest {
 
     @Test
     @DisplayName("RedisHighAvailabilityContextCustomizer should throw NoSuchElementException when no nodes are available")
-    fun noMoreNodes_shouldThrow() {
+    fun noNodes_shouldThrow() {
         mockkConstructor(NodeProvider::class) {
             every { anyConstructed<NodeProvider>().next() } throws NoSuchElementException()
+            assertThatThrownBy {
+                AnnotationConfigApplicationContext().use {
+                    RedisHighAvailabilityContextCustomizerFactory()
+                        .createContextCustomizer(AnnotatedClass::class.java, mutableListOf())
+                        .customizeContext(it, mockk())
+                    it.refresh()
+                    it.start()
+                }
+            }.isInstanceOf(NoSuchElementException::class.java)
+        }
+    }
+
+    @Test
+    @DisplayName("RedisHighAvailabilityContextCustomizer should throw NoSuchElementException when not enough nodes are available")
+    fun notEnoughNodes_shouldThrow() {
+        mockkConstructor(NodeProvider::class) {
+            every { anyConstructed<NodeProvider>().next() } returns Node(
+                12345,
+                "127.0.0.1"
+            ) andThenThrows NoSuchElementException()
             assertThatThrownBy {
                 AnnotationConfigApplicationContext().use {
                     RedisHighAvailabilityContextCustomizerFactory()
