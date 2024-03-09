@@ -5,7 +5,7 @@ link:./LICENSE[image:https://img.shields.io/badge/License-Apache%202.0-orange[Ap
 image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring-boot-embedded-redis&metric=alert_status[Quality Gate Status,link=https://sonarcloud.io/summary/new_code?id=tobias-laa_spring-boot-embedded-redis]
 image:https://sonarcloud.io/api/project_badges/measure?project=tobias-laa_spring-boot-embedded-redis&metric=coverage[Coverage,link=https://sonarcloud.io/summary/new_code?id=tobias-laa_spring-boot-embedded-redis]
 
-= Spring Boot `embedded-redis`
+= Spring Boot® `embedded-redis`
 
 This library provides an easy way to run an embedded Redis server in your Spring Boot integration tests.
 It mainly acts as a glue between the https://github.com/codemonstur/embedded-redis[`embedded-redis`] library and Spring Boot.
@@ -81,3 +81,7 @@ If you have some integration tests running without an embedded Redis and some wi
 This library is heavily inspired by the awesome https://github.com/maciejwalkowiak/wiremock-spring-boot[WireMock Spring Boot] library.
 
 Furthermore, this library would of course not exist without the https://github.com/codemonstur/embedded-redis[`embedded-redis`] library.
+
+== Attributions
+
+This library is *not* an official Spring project. Spring is a trademark of Pivotal Software, Inc. in the U.S. and other countries.
