@@ -39,8 +39,8 @@ java {
 
 sonar {
     properties {
-        property("sonar.projectKey", "tobias-laa_spring-boot-embedded-redis")
-        property("sonar.organization", "tobias-laa")
+        property("sonar.projectKey", "tobi-laa_spring-boot-embedded-redis")
+        property("sonar.organization", "tobi-laa")
         property("sonar.host.url", "https://sonarcloud.io")
     }
 }
@@ -124,7 +124,7 @@ publishing {
             pom {
                 name = "${group}:${rootProject.name}"
                 description = "Integrates embedded-redis with Spring Boot"
-                url = "https://github.com/tobias-laa/spring-boot-embedded-redis.git"
+                url = "https://github.com/tobi-laa/spring-boot-embedded-redis.git"
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
@@ -138,18 +138,18 @@ publishing {
                         id = "tobi-laa"
                         name = "Tobias Laatsch"
                         email = "tobias.laatsch@posteo.de"
-                        organizationUrl = "https://github.com/tobias-laa"
+                        organizationUrl = "https://github.com/tobi-laa"
                     }
                 }
                 scm {
-                    connection = "scm:git:git@github.com:tobias-laa/spring-boot-embedded-redis.git"
-                    developerConnection = "scm:git:git@github.com:tobias-laa/spring-boot-embedded-redis.git"
-                    url = "https://github.com/tobias-laa/spring-boot-embedded-redis/tree/master"
+                    connection = "scm:git:git@github.com:tobi-laa/spring-boot-embedded-redis.git"
+                    developerConnection = "scm:git:git@github.com:tobi-laa/spring-boot-embedded-redis.git"
+                    url = "https://github.com/tobi-laa/spring-boot-embedded-redis/tree/master"
                     tag = "HEAD"
                 }
                 issueManagement {
                     system = "GitHub Issues"
-                    url = "https://github.com/tobias-laa/spring-boot-embedded-redis/issues"
+                    url = "https://github.com/tobi-laa/spring-boot-embedded-redis/issues"
                 }
                 inceptionYear = "2024"
             }
