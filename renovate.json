@@ -3,5 +3,6 @@
   "extends": [
     "config:best-practices"
   ],
-  "automerge": true
+  "automerge": true,
+  "automergeType": "branch"
 }
