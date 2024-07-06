@@ -46,11 +46,11 @@ class MyIntegrationTest {
 This will start an embedded Redis server before the Spring context corresponding to the test class is loaded for the first time and stop it after the context is closed.
 The necessary Spring Data Redis properties are automatically set.
 
-You can also use the `@EmbeddedRedisShardedCluster` annotation to start an embedded Redis cluster:
+You can also use the `@EmbeddedRedisCluster` annotation to start an embedded Redis cluster:
 
 [source,java]
 ----
-@EmbeddedRedisShardedCluster
+@EmbeddedRedisCluster
 @SpringBootTest
 class MyIntegrationTest {
     // ...
