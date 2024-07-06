@@ -81,7 +81,7 @@ internal object RedisConfParser {
         }
     }
 
-    private enum class ArgsParseState {
+    internal enum class ArgsParseState {
         UNESCAPED, ESCAPED_SINGLE, ESCAPED_DOUBLE
     }
 }

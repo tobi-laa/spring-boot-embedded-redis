@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions.*
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Named.named
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -198,6 +200,21 @@ internal class RedisConfParserTest {
                         )
                     )
                 )
+            )
+        }
+    }
+
+    @Nested
+    @DisplayName("RedisConfParser.ArgsParseState tests")
+    internal inner class ArgsParseStateTest {
+
+        @Test
+        @DisplayName("Static field entries returns all enum values")
+        fun getEntries_returnsAllValues() {
+            assertThat(RedisConfParser.ArgsParseState.entries).containsExactlyInAnyOrder(
+                RedisConfParser.ArgsParseState.UNESCAPED,
+                RedisConfParser.ArgsParseState.ESCAPED_SINGLE,
+                RedisConfParser.ArgsParseState.ESCAPED_DOUBLE
             )
         }
     }
