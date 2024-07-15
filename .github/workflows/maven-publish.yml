@@ -21,7 +21,7 @@ jobs:
           tag: ${{ github.event.release.tag_name }}
           generateReleaseNotes: true
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@88425854a36845f9c881450d9660b5fd46bee142
+        uses: gradle/wrapper-validation-action@f9c9c575b8b21b6485636a91ffecd10e558c62f6
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
         with:
