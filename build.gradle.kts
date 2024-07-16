@@ -8,6 +8,7 @@ val commonsValidatorVersion = "1.9.0"
 val mockkVersion = "1.13.12"
 val archunitVersion = "1.3.0"
 val logunitVersion = "2.0.0"
+val xmlunitVersion = "2.10.0"
 
 plugins {
     val springDependencyManagementVersion = "1.1.6"
@@ -70,6 +71,7 @@ dependencies {
     testImplementation("org.junit.platform:junit-platform-testkit")
     testImplementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.xmlunit:xmlunit-core:$xmlunitVersion")
     testImplementation("com.jayway.jsonpath:json-path:$jsonPathVersion") // override transitive dep due to CVE violation
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.tngtech.archunit:archunit-junit5:$archunitVersion")
