@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val springBootVersion = "3.3.1"
+val springBootVersion = "3.3.2"
 val junitPlatformVersion = "1.10.2"
 val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.3"
