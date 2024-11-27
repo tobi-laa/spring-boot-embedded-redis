@@ -14,7 +14,7 @@ plugins {
     val springDependencyManagementVersion = "1.1.6"
     val kotlinVersion = "2.1.0"
     val adarshrTestLoggerVersion = "4.0.0"
-    val sonarqubeVersion = "5.1.0.4882"
+    val sonarqubeVersion = "6.0.1.5171"
     val gradleReleasePluginVersion = "3.0.2"
     val gradleNexusPublishPluginVersion = "2.0.0"
 
