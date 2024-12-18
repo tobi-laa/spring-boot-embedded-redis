@@ -11,7 +11,7 @@ val logunitVersion = "2.0.0"
 val xmlunitVersion = "2.10.0"
 
 plugins {
-    val springDependencyManagementVersion = "1.1.6"
+    val springDependencyManagementVersion = "1.1.7"
     val kotlinVersion = "2.1.0"
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "6.0.1.5171"
