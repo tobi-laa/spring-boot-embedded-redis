@@ -6,7 +6,7 @@ val jsonPathVersion = "2.9.0" // override transitive dep due to CVE violation
 val embeddedRedisVersion = "1.4.3"
 val commonsValidatorVersion = "1.9.0"
 val mockkVersion = "1.13.17"
-val archunitVersion = "1.4.0"
+val archunitVersion = "1.4.1"
 val logunitVersion = "2.0.0"
 val xmlunitVersion = "2.10.1"
 
