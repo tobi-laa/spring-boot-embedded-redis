@@ -147,7 +147,7 @@ publishing {
     }
     repositories {
         maven {
-            url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+            url = uri(layout.buildDirectory.dir("staging-deploy").get().asFile.toURI())
         }
     }
 }
