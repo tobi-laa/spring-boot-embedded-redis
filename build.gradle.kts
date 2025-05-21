@@ -1,3 +1,5 @@
+import org.jreleaser.model.Active
+
 val springBootVersion = "3.4.5"
 val junitPlatformVersion = "1.10.2"
 val embeddedRedisVersion = "1.4.3"
@@ -13,7 +15,7 @@ plugins {
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "6.2.0.5505"
     val gradleReleasePluginVersion = "3.1.0"
-    val gradleNexusPublishPluginVersion = "2.0.0"
+    val jreleaserVersion = "1.18.0"
 
     kotlin("jvm") version kotlinVersion
     id("io.spring.dependency-management") version springDependencyManagementVersion
@@ -24,7 +26,7 @@ plugins {
     id("maven-publish")
     id("signing")
     id("net.researchgate.release") version gradleReleasePluginVersion
-    id("io.github.gradle-nexus.publish-plugin") version gradleNexusPublishPluginVersion
+    id("org.jreleaser") version jreleaserVersion
 }
 
 group = "io.github.tobi-laa"
@@ -94,17 +96,6 @@ tasks.jacocoTestReport {
     }
 }
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            username = System.getenv("OSSRH_USERNAME")
-            password = System.getenv("OSSRH_TOKEN")
-        }
-    }
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -151,6 +142,29 @@ publishing {
                     url = "https://github.com/tobi-laa/spring-boot-embedded-redis/issues"
                 }
                 inceptionYear = "2024"
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = Active.ALWAYS
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                create("sonatype") {
+                    active = Active.ALWAYS
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                }
             }
         }
     }
