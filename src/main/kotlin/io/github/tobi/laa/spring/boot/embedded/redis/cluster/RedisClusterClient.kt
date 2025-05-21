@@ -4,7 +4,7 @@ import io.github.tobi.laa.spring.boot.embedded.redis.RedisClient
 import redis.clients.jedis.JedisCluster
 import redis.clients.jedis.Protocol
 
-internal class RedisClusterClient(private val jedisCluster: JedisCluster) : RedisClient {
+internal class RedisClusterClient(private val jedisCluster: JedisCluster) : RedisClient, AutoCloseable by jedisCluster {
 
     override fun flushAll(): String {
         jedisCluster.clusterNodes.values.forEach { it.resource.sendCommand(Protocol.Command.FLUSHALL) }
@@ -12,6 +12,4 @@ internal class RedisClusterClient(private val jedisCluster: JedisCluster) : Redi
     }
 
     override fun get(key: String): String = jedisCluster[key]
-
-    override fun close(): Unit = jedisCluster.close()
 }
