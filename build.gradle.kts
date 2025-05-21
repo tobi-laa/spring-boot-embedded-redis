@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 val springBootVersion = "3.4.5"
 val junitPlatformVersion = "1.10.2"
 val embeddedRedisVersion = "1.4.3"
@@ -11,7 +9,7 @@ val xmlunitVersion = "2.10.1"
 
 plugins {
     val springDependencyManagementVersion = "1.1.7"
-    val kotlinVersion = "2.1.21"
+    val kotlinVersion = "1.9.25"
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "6.2.0.5505"
     val gradleReleasePluginVersion = "3.1.0"
@@ -32,7 +30,9 @@ plugins {
 group = "io.github.tobi-laa"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
     withJavadocJar()
     withSourcesJar()
 }
@@ -76,10 +76,9 @@ dependencies {
     testImplementation("io.github.netmikey.logunit:logunit-core:$logunitVersion")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "21"
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
