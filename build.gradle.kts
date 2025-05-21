@@ -168,6 +168,12 @@ jreleaser {
             }
         }
     }
+    release {
+        generic {
+            skipTag = true
+            skipRelease = true
+        }
+    }
 }
 
 signing {
