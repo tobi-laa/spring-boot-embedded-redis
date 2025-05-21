@@ -169,7 +169,7 @@ jreleaser {
         }
     }
     release {
-        generic {
+        github {
             skipTag = true
             skipRelease = true
         }
