@@ -7,7 +7,7 @@ val commonsValidatorVersion = "1.9.0"
 val mockkVersion = "1.14.2"
 val archunitVersion = "1.4.1"
 val logunitVersion = "2.0.0"
-val xmlunitVersion = "2.10.1"
+val xmlunitVersion = "2.10.2"
 
 plugins {
     val springDependencyManagementVersion = "1.1.7"
