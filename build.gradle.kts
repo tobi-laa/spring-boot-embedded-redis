@@ -189,4 +189,7 @@ tasks.javadoc {
 
 release {
     tagTemplate = "v${version}"
+    preTagCommitMessage = ":rocket: pre tag commit:"
+    tagCommitMessage = ":rocket: creating tag:"
+    newVersionCommitMessage = ":rocket: new version commit:"
 }
