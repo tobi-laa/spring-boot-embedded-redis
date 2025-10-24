@@ -13,7 +13,7 @@ plugins {
     val springDependencyManagementVersion = "1.1.7"
     val kotlinVersion = "1.9.25"
     val adarshrTestLoggerVersion = "4.0.0"
-    val sonarqubeVersion = "6.3.1.5724"
+    val sonarqubeVersion = "7.0.1.6134"
     val gradleReleasePluginVersion = "3.1.0"
     val jreleaserVersion = "1.20.0"
 
