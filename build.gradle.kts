@@ -3,7 +3,7 @@ import org.jreleaser.model.Active
 val springBootVersion = "3.5.6"
 val junitPlatformVersion = "1.10.2"
 val embeddedRedisVersion = "1.4.3"
-val commonsValidatorVersion = "1.10.0"
+val commonsValidatorVersion = "1.10.1"
 val mockkVersion = "1.14.6"
 val archunitVersion = "1.4.1"
 val logunitVersion = "2.0.0"
