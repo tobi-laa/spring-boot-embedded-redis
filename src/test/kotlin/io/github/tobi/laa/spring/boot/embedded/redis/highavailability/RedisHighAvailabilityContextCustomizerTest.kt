@@ -73,6 +73,14 @@ internal class RedisHighAvailabilityContextCustomizerTest {
     }
 
     @Test
+    @DisplayName("RedisHighAvailabilityContextCustomizer.equals() should be false for different config")
+    fun differentConfig_equals_shouldBeFalse() {
+        val otherConfig = EmbeddedRedisHighAvailability(replicas = 1)
+        val otherCustomizer = RedisHighAvailabilityContextCustomizer(otherConfig, portProvider)
+        assertThat(givenCustomizer.equals(otherCustomizer)).isFalse()
+    }
+
+    @Test
     @DisplayName("RedisHighAvailabilityContextCustomizer should throw when unsupported OS was detected")
     fun unsupportedOS_shouldThrow() {
         val windowsArm64 = OsArchitecture(WINDOWS, aarch64)

@@ -54,6 +54,16 @@ internal class RedisClusterContextCustomizerTest {
     }
 
     @Test
+    @DisplayName("RedisClusterContextCustomizer.equals() should be false for different config")
+    fun differentConfig_equals_shouldBeFalse() {
+        val otherConfig = EmbeddedRedisCluster(
+            shards = arrayOf(EmbeddedRedisCluster.Shard(replicas = 1))
+        )
+        val otherCustomizer = RedisClusterContextCustomizer(otherConfig, portProvider)
+        assertThat(givenCustomizer.equals(otherCustomizer)).isFalse()
+    }
+
+    @Test
     @DisplayName("Closing ApplicationContext should stop Redis server and Redis client")
     fun closingApplicationContext_shouldStopRedisServerAndRedisClient() {
         var server: Redis?
