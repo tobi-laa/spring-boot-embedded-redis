@@ -42,3 +42,13 @@ build/
 
 ### Kotlin ###
 .kotlin
+
+### Continue.dev
+.continue
+
+### Jetbrains AI
+.ai
+.aiassistant
+
+### Claude Code
+CLAUDE.md
