@@ -22,7 +22,11 @@ internal class ExecutionDirTest {
         @BeforeAll
         @JvmStatic
         fun beforeAll() {
-            File(CUSTOM_EXECUTION_DIR).mkdirs()
+            val dir = File(CUSTOM_EXECUTION_DIR)
+            if (dir.exists()) {
+                dir.deleteRecursively()
+            }
+            dir.mkdirs()
         }
     }
 

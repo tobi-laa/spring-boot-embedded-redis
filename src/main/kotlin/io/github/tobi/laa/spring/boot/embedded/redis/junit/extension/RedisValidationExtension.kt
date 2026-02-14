@@ -16,7 +16,7 @@ internal class RedisValidationExtension : BeforeAllCallback {
 
     private val validPortRange = 0..65535
 
-    override fun beforeAll(context: ExtensionContext?) {
+    override fun beforeAll(context: ExtensionContext) {
         val embeddedRedisStandalone = annotation(context, EmbeddedRedisStandalone::class.java)
         val embeddedRedisHighAvailability = annotation(context, EmbeddedRedisHighAvailability::class.java)
         val embeddedRedisCluster = annotation(context, EmbeddedRedisCluster::class.java)
@@ -26,7 +26,7 @@ internal class RedisValidationExtension : BeforeAllCallback {
         embeddedRedisCluster?.let { validateCluster(it) }
     }
 
-    private fun validateMutuallyExclusive(context: ExtensionContext?) {
+    private fun validateMutuallyExclusive(context: ExtensionContext) {
         val count = Stream.of(
             annotations(context, EmbeddedRedisStandalone::class.java),
             annotations(context, EmbeddedRedisHighAvailability::class.java),
@@ -90,11 +90,11 @@ internal class RedisValidationExtension : BeforeAllCallback {
         return customizer.constructors.any { it.parameters.isEmpty() }
     }
 
-    private inline fun <reified A : Annotation> annotation(context: ExtensionContext?, type: Class<A>): A? {
+    private inline fun <reified A : Annotation> annotation(context: ExtensionContext, type: Class<A>): A? {
         return annotations(context, type).firstOrNull()
     }
 
-    private inline fun <reified A : Annotation> annotations(context: ExtensionContext?, type: Class<A>): List<A> {
-        return findTestClassAnnotations(context!!.requiredTestClass, type)
+    private inline fun <reified A : Annotation> annotations(context: ExtensionContext, type: Class<A>): List<A> {
+        return findTestClassAnnotations(context.requiredTestClass, type)
     }
 }

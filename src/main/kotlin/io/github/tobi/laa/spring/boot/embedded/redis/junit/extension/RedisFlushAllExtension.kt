@@ -14,25 +14,25 @@ import org.springframework.test.context.junit.jupiter.SpringExtension.getApplica
  */
 internal class RedisFlushAllExtension : AfterEachCallback, AfterAllCallback {
 
-    override fun afterEach(extensionContext: ExtensionContext?) {
+    override fun afterEach(extensionContext: ExtensionContext) {
         if (flushAllMode(extensionContext) == AFTER_METHOD) {
             flushAll(extensionContext)
         }
     }
 
-    override fun afterAll(extensionContext: ExtensionContext?) {
+    override fun afterAll(extensionContext: ExtensionContext) {
         if (flushAllMode(extensionContext) == AFTER_CLASS) {
             flushAll(extensionContext)
         }
     }
 
-    private fun flushAllMode(extensionContext: ExtensionContext?): RedisFlushAll.Mode {
-        val mode = extensionContext!!.requiredTestClass.getAnnotation(RedisFlushAll::class.java)?.mode
+    private fun flushAllMode(extensionContext: ExtensionContext): RedisFlushAll.Mode {
+        val mode = extensionContext.requiredTestClass.getAnnotation(RedisFlushAll::class.java)?.mode
         return mode ?: AFTER_METHOD
     }
 
-    private fun flushAll(extensionContext: ExtensionContext?) {
-        val applicationContext = getApplicationContext(extensionContext!!)
+    private fun flushAll(extensionContext: ExtensionContext) {
+        val applicationContext = getApplicationContext(extensionContext)
         RedisStore.client(applicationContext)!!.flushAll()
     }
 }

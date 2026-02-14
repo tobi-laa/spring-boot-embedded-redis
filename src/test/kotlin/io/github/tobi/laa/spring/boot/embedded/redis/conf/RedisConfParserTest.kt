@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.support.ParameterDeclarations
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.stream.Stream
@@ -79,7 +80,7 @@ internal class RedisConfParserTest {
 
         private val dir = Paths.get("src/test/resources/redis-conf/official-examples")
 
-        override fun provideArguments(extensionContext: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             val versions = dir.listDirectoryEntries().map { it.fileName }
             return versions
                 .map {
@@ -98,7 +99,7 @@ internal class RedisConfParserTest {
 
         private val dir = Paths.get("src/test/resources/redis-conf/invalid-examples")
 
-        override fun provideArguments(extensionContext: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(
                     named(
@@ -150,7 +151,7 @@ internal class RedisConfParserTest {
 
         private val dir = Paths.get("src/test/resources/redis-conf/valid-examples")
 
-        override fun provideArguments(extensionContext: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(
                     named(

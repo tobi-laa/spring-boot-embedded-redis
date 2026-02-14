@@ -5,7 +5,7 @@ import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfLocator
 import io.github.tobi.laa.spring.boot.embedded.redis.conf.RedisConfParser
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.ObjectAssert
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties
+import org.springframework.boot.data.redis.autoconfigure.DataRedisProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Scope
@@ -30,7 +30,7 @@ private val INITIALIZATION_TIMEOUT_PROP = RedisShardedCluster::class.java.declar
 @Scope("prototype")
 @Suppress("unused")
 internal class RedisTests(
-    val props: RedisProperties,
+    val props: DataRedisProperties,
     val template: RedisTemplate<String, Any>,
     val random: Random = Random.Default
 ) : ApplicationContextAware {
@@ -109,7 +109,7 @@ internal class RedisTests(
         }
     }
 
-    inner class RedisPropertiesAssertion : ObjectAssert<RedisProperties>(props) {
+    inner class RedisPropertiesAssertion : ObjectAssert<DataRedisProperties>(props) {
 
         var sentinel: Boolean = false
         var cluster: Boolean = false
@@ -151,10 +151,10 @@ internal class RedisTests(
 
         fun shouldHaveNode(host: String, port: Int): RedisPropertiesAssertion {
             if (cluster) {
-                assertThat(props.cluster.nodes).contains("$host:$port")
+                assertThat(props.cluster!!.nodes).contains("$host:$port")
             }
             if (sentinel) {
-                assertThat(props.sentinel.nodes).contains("$host:$port")
+                assertThat(props.sentinel!!.nodes).contains("$host:$port")
             }
             return this
         }

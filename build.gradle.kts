@@ -1,10 +1,6 @@
 import org.jreleaser.model.Active
 
-<<<<<<< HEAD
 val springBootVersion = "4.0.2"
-=======
-val springBootVersion = "3.5.10"
->>>>>>> origin/renovate/spring-boot
 val junitPlatformVersion = "1.10.2"
 val embeddedRedisVersion = "1.4.3"
 val commonsValidatorVersion = "1.10.1"
@@ -15,7 +11,7 @@ val xmlunitVersion = "2.11.0"
 
 plugins {
     val springDependencyManagementVersion = "1.1.7"
-    val kotlinVersion = "1.9.25"
+    val kotlinVersion = "2.2.0"
     val adarshrTestLoggerVersion = "4.0.0"
     val sonarqubeVersion = "7.2.2.6593"
     val gradleReleasePluginVersion = "3.1.0"

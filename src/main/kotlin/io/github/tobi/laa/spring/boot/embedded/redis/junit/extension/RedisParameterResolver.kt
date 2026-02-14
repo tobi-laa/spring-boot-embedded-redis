@@ -18,7 +18,7 @@ import redis.embedded.RedisShardedCluster
  */
 internal class RedisParameterResolver : ParameterResolver {
 
-    override fun supportsParameter(parameterContext: ParameterContext?, extensionContext: ExtensionContext?): Boolean {
+    override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean {
         val type = parameterType(parameterContext)
         return redisResolvable(type)
                 || redisStandaloneResolvable(type, extensionContext)
@@ -26,35 +26,35 @@ internal class RedisParameterResolver : ParameterResolver {
                 || clusterResolvable(type, extensionContext)
     }
 
-    private fun parameterType(parameterContext: ParameterContext?): Class<*> {
-        return parameterContext!!.parameter.type
+    private fun parameterType(parameterContext: ParameterContext): Class<*> {
+        return parameterContext.parameter.type
     }
 
     private fun redisResolvable(type: Class<*>): Boolean {
         return type == Redis::class.java
     }
 
-    private fun redisStandaloneResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun redisStandaloneResolvable(type: Class<*>, extensionContext: ExtensionContext): Boolean {
         return type.isAssignableFrom(RedisServer::class.java)
                 && annotatedWith(extensionContext, EmbeddedRedisStandalone::class.java)
     }
 
-    private fun highAvailabilityResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun highAvailabilityResolvable(type: Class<*>, extensionContext: ExtensionContext): Boolean {
         return type.isAssignableFrom(RedisCluster::class.java)
                 && annotatedWith(extensionContext, EmbeddedRedisHighAvailability::class.java)
     }
 
-    private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext?): Boolean {
+    private fun clusterResolvable(type: Class<*>, extensionContext: ExtensionContext): Boolean {
         return type.isAssignableFrom(RedisShardedCluster::class.java)
                 && annotatedWith(extensionContext, EmbeddedRedisCluster::class.java)
     }
 
-    private fun annotatedWith(extensionContext: ExtensionContext?, annotationType: Class<out Annotation>): Boolean {
-        return extensionContext!!.requiredTestClass.isAnnotationPresent(annotationType)
+    private fun annotatedWith(extensionContext: ExtensionContext, annotationType: Class<out Annotation>): Boolean {
+        return extensionContext.requiredTestClass.isAnnotationPresent(annotationType)
     }
 
-    override fun resolveParameter(parameterContext: ParameterContext?, extensionContext: ExtensionContext?): Any {
-        val applicationContext = getApplicationContext(extensionContext!!)
+    override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Any {
+        val applicationContext = getApplicationContext(extensionContext)
         return RedisStore.server(applicationContext)!!
     }
 }

@@ -17,6 +17,7 @@ import io.mockk.unmockkConstructor
 import org.assertj.core.api.ListAssert
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Named.named
+import org.junit.jupiter.params.support.ParameterDeclarations
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -405,7 +406,7 @@ internal class RedisValidationExtensionTest {
 
     internal class ClassesWithMultipleAnnotationsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("all three annotations", AllThreeAnnotations::class.java)),
                 arguments(
@@ -459,7 +460,7 @@ internal class RedisValidationExtensionTest {
 
     internal class StandaloneWithInvalidPortProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("that is negative", NegativePort::class.java)),
                 arguments(named("65536", Port65536::class.java)),
@@ -495,7 +496,7 @@ internal class RedisValidationExtensionTest {
 
     internal class ClusterWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("a shard that has a negative number of replicas", NegativeReplicas::class.java)),
                 arguments(named("a shard that has 0 replicas", ZeroReplicas::class.java))
@@ -511,7 +512,7 @@ internal class RedisValidationExtensionTest {
 
     internal class ClusterWithInvalidNOfPortsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(
                     named(
@@ -537,7 +538,7 @@ internal class RedisValidationExtensionTest {
 
     internal class ClusterWithInvalidPortsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("that include a negative number", NegativePort::class.java)),
                 arguments(named("that include 65536", Port65536::class.java))
@@ -559,7 +560,7 @@ internal class RedisValidationExtensionTest {
 
     internal class ClusterWithInvalidInitTimeoutProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("0", Zero::class.java)),
                 arguments(named("-1", Negative::class.java))
@@ -601,7 +602,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidNOfReplicasProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("a negative number of replicas", NegativeReplicas::class.java)),
                 arguments(named("0 replicas", ZeroReplicas::class.java))
@@ -617,7 +618,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidNOfPortsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(
                     named(
@@ -643,7 +644,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidPortsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("that include a negative number", NegativePort::class.java)),
                 arguments(named("that include a negative number for a sentinel", NegativePortSentinel::class.java)),
@@ -667,7 +668,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidDownAfterMillisProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("0 as", Zero::class.java)),
                 arguments(named("a negative number as", Negative::class.java))
@@ -683,7 +684,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidFailOverTimeoutMillisProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("0 as", Zero::class.java)),
                 arguments(named("a negative number as", Negative::class.java))
@@ -699,7 +700,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithInvalidParallelSyncsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(named("0 as", Zero::class.java)),
                 arguments(named("a negative number as", Negative::class.java))
@@ -739,7 +740,7 @@ internal class RedisValidationExtensionTest {
 
     internal class HighAvailabilityWithDuplicatePortsProvider : ArgumentsProvider {
 
-        override fun provideArguments(context: ExtensionContext?): Stream<Arguments> {
+        override fun provideArguments(parameters: ParameterDeclarations, context: ExtensionContext): Stream<Arguments> {
             return Stream.of(
                 arguments(
                     named(
