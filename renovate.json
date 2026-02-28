@@ -3,6 +3,19 @@
   "extends": [
     "config:best-practices"
   ],
-  "automerge": true,
-  "automergeType": "branch"
+  "schedule": ["on saturday"],
+  "packageRules": [
+    {
+      "description": "Automatically merge minor and patch-level updates when checks pass, grouped into a single branch",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": true,
+      "automergeType": "branch",
+      "groupName": "all non-major updates"
+    },
+    {
+      "description": "Group all major updates into a single PR once per week",
+      "matchUpdateTypes": ["major"],
+      "groupName": "all major updates"
+    }
+  ]
 }
