@@ -1,6 +1,6 @@
 import org.jreleaser.model.Active
 
-val springBootVersion = "4.0.2"
+val springBootVersion = "4.0.3"
 val junitPlatformVersion = "1.10.2"
 val embeddedRedisVersion = "1.4.3"
 val commonsValidatorVersion = "1.10.1"
