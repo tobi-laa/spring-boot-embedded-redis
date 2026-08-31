@@ -1,21 +1,21 @@
 import org.jreleaser.model.Active
 
-val springBootVersion = "4.0.3"
+val springBootVersion = "4.1.1"
 val junitPlatformVersion = "1.10.2"
-val embeddedRedisVersion = "1.4.3"
-val commonsValidatorVersion = "1.10.1"
-val mockkVersion = "1.14.9"
-val archunitVersion = "1.4.1"
+val embeddedRedisVersion = "1.4.4"
+val commonsValidatorVersion = "1.11.0"
+val mockkVersion = "1.14.11"
+val archunitVersion = "1.5.0"
 val logunitVersion = "2.0.0"
-val xmlunitVersion = "2.11.0"
+val xmlunitVersion = "2.13.0"
 
 plugins {
     val springDependencyManagementVersion = "1.1.7"
-    val kotlinVersion = "2.3.10"
+    val kotlinVersion = "2.4.10"
     val adarshrTestLoggerVersion = "4.0.0"
-    val sonarqubeVersion = "7.2.2.6593"
+    val sonarqubeVersion = "7.4.0.8496"
     val gradleReleasePluginVersion = "3.1.0"
-    val jreleaserVersion = "1.23.0"
+    val jreleaserVersion = "1.26.0"
 
     kotlin("jvm") version kotlinVersion
     id("io.spring.dependency-management") version springDependencyManagementVersion
